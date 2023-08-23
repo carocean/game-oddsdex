@@ -1,0 +1,20 @@
+{
+  "name": "app",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "http": "^0.0.1-security",
+    "jquery": "^3.7.0",
+    "jsdom": "^22.1.0"
+  },
+  "devDependencies": {
+    "@types/jquery": "^3.5.16"
+  }
+}
