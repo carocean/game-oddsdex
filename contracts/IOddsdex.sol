@@ -6,6 +6,8 @@ pragma solidity >=0.4.22 <0.8.20;
 interface IOddsdexContract {
     function getState() external returns (OddsdexState);
 
+    function getWinningDirection() external returns (CoinDirection);
+
     function getWeiPrice() external returns (uint256);
 
     function getBulletinBoard() external returns (BulletinBoard memory);
@@ -30,9 +32,23 @@ interface IOddsdexContract {
 
     function matchmake() external;
 
-    function stake(CoinDirection buyDirection, uint32 luckyNumber) external payable;
+    function stake(
+        CoinDirection buyDirection,
+        uint32 luckyNumber
+    ) external payable;
 
-    event OnBuyOrder(PlayerBill bill);
+    event OnLotteryEvent(LotteryMessage message);
+
+    event OnMatchMakingEvent(MatchmakingBill bill);
+    event OnStakeBillEvent(StakeBill bill);
+    event OnReturnBillEvent(ReturnBill bill);
+    event OnSplitBillEvent(SplitBill bill);
+}
+struct LotteryMessage {
+    CoinDirection winningDirection;
+    uint256 luckyNumber;
+    address broker;
+    uint256 coverHash;
 }
 enum CoinDirection {
     unknown,
@@ -54,7 +70,7 @@ struct BulletinBoard {
     uint16 brokerageRate;
     uint16 taxRate;
 }
-struct PlayerBill {
+struct StakeBill {
     string id;
     address owner;
     uint256 odds;
@@ -63,4 +79,41 @@ struct PlayerBill {
     CoinDirection buyDirection;
     uint256 gas;
     uint32 luckyNumber;
+}
+struct MatchmakingBill {
+    string id;
+    string refFId;
+    string refBId;
+    string mtn; //Matchmaking transaction number
+    address broker;
+    uint256 dealOdds;
+    uint256 dealPrice;
+    uint256 tailFOdds;
+    uint256 tailBOdds;
+    uint256 tailFCostOnBill;
+    uint256 tailBCostOnBill;
+    uint256 tailFReturnCosts;
+    uint256 tailBReturnCosts;
+    uint256 prize;
+}
+struct ReturnBill {
+    string id;
+    string refId;
+    string mtn; //Matchmaking transaction number
+    address owner;
+    uint256 costs;
+}
+struct SplitBill {
+    string id;
+    string refId;
+    string mtn; //Matchmaking transaction number
+    address owner;
+    uint16 kickbackRate;
+    uint16 brokerageRate;
+    uint16 taxRate;
+    uint256 prize;
+    uint256 bonus;
+    uint256 kickback;
+    uint256 brokerage;
+    uint256 tax;
 }

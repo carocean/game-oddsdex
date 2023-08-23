@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.4.22 <0.8.20;
-import "./IOddsdexContract.sol";
+import "./IOddsdex.sol";
 import "./SafeMath.sol";
 
 contract OddsdexContract is IOddsdexContract {
@@ -14,9 +14,9 @@ contract OddsdexContract is IOddsdexContract {
     BulletinBoard private bulletinBoard;
     uint256 private coverHash;
     CoinDirection private winningDirection;
-    mapping(address => PlayerBill[]) playerBills;
-    PlayerBill[] buyFrontBillQueue;
-    PlayerBill[] buyBackBillQueue;
+    mapping(address => StakeBill[]) stakeBills;
+    StakeBill[] buyFrontBillQueue;
+    StakeBill[] buyBackBillQueue;
 
     constructor(address _root, address _broker) {
         parent = msg.sender;
@@ -59,6 +59,15 @@ contract OddsdexContract is IOddsdexContract {
 
     function getState() public view override returns (OddsdexState) {
         return state;
+    }
+
+    function getWinningDirection()
+        public
+        view
+        override
+        returns (CoinDirection)
+    {
+        return winningDirection;
     }
 
     function getWeiPrice() public view override returns (uint256) {
@@ -122,6 +131,16 @@ contract OddsdexContract is IOddsdexContract {
         state == OddsdexState.lottering;
         winningDirection = _calculateWinning(_luckyNumber);
         state == OddsdexState.lottered;
+
+        LotteryMessage memory message = LotteryMessage(
+            winningDirection,
+            _luckyNumber,
+            broker,
+            coverHash
+        );
+
+        emit OnLotteryEvent(message);
+
         return winningDirection;
     }
 
@@ -149,11 +168,11 @@ contract OddsdexContract is IOddsdexContract {
         if (state != OddsdexState.lottered) {
             return false;
         }
-        PlayerBill memory tailF;
+        StakeBill memory tailF;
         if (buyFrontBillQueue.length > 0) {
             tailF = buyFrontBillQueue[buyFrontBillQueue.length - 1];
         }
-        PlayerBill memory tailB;
+        StakeBill memory tailB;
         if (buyBackBillQueue.length > 0) {
             tailB = buyBackBillQueue[buyBackBillQueue.length - 1];
         }
@@ -181,13 +200,13 @@ contract OddsdexContract is IOddsdexContract {
 
     function _matchmakePairBill() internal {
         //撮合一次对单之后，吃不掉的还在队列中，因此等下轮撮合，所以只考虑撮合当前对单即可
-        PlayerBill memory tailF;
+        StakeBill memory tailF;
         if (buyFrontBillQueue.length > 0) {
             tailF = buyFrontBillQueue[buyFrontBillQueue.length - 1];
             buyFrontBillQueue.pop();
         }
 
-        PlayerBill memory tailB;
+        StakeBill memory tailB;
         if (buyBackBillQueue.length > 0) {
             tailB = buyBackBillQueue[buyBackBillQueue.length - 1];
             buyBackBillQueue.pop();
@@ -199,6 +218,13 @@ contract OddsdexContract is IOddsdexContract {
         uint256 tailBOdds = tailB.odds.sub(dealOdds);
         uint256 tailFCostOnBill = tailFOdds.mul(tailF.buyPrice);
         uint256 tailBCostOnBill = tailBOdds.mul(tailB.buyPrice);
+
+        bytes memory idBytes = abi.encodePacked(
+            block.timestamp,
+            block.prevrandao
+        );
+        //mtn is Matchmaking transaction number
+        string memory mtn = string(idBytes);
 
         if (tailFOdds > 0) {
             tailF.costs = tailFCostOnBill;
@@ -219,31 +245,75 @@ contract OddsdexContract is IOddsdexContract {
             tailBCostOnBill
         );
 
-        _returnCost(tailFReturnCost, tailF.owner);
-        _returnCost(tailBReturnCost, tailB.owner);
+        _returnCost(mtn, tailFReturnCost, tailF);
+        _returnCost(mtn, tailBReturnCost, tailB);
 
         if (winningDirection == CoinDirection.front) {
-            _splitPrize(prize, tailF.owner);
+            _splitPrize(mtn, prize, tailF);
         } else if (winningDirection == CoinDirection.back) {
-            _splitPrize(prize, tailB.owner);
+            _splitPrize(mtn, prize, tailB);
         } else {}
 
         bulletinBoard.price = dealPrice;
         bulletinBoard.odds -= dealOdds;
+
+        bytes memory idNewBytes = abi.encodePacked(
+            block.timestamp,
+            block.prevrandao
+        );
+        string memory id = string(idNewBytes);
+
+        MatchmakingBill memory _mbill = MatchmakingBill(
+            id,
+            tailF.id,
+            tailB.id,
+            mtn,
+            broker,
+            dealOdds,
+            dealPrice,
+            tailFOdds,
+            tailBOdds,
+            tailFCostOnBill,
+            tailBCostOnBill,
+            tailFReturnCost,
+            tailBReturnCost,
+            prize
+        );
+        emit OnMatchMakingEvent(_mbill);
     }
 
-    function _returnCost(uint256 cost, address player) internal {
+    function _returnCost(
+        string memory mtn,
+        uint256 cost,
+        StakeBill memory bill
+    ) internal {
+        address player = bill.owner;
         (bool success, ) = payable(player).call{value: cost}(new bytes(0));
         require(success, "ETH_TRANSFER_FAILED");
+
+        bytes memory idBytes = abi.encodePacked(
+            block.timestamp,
+            block.prevrandao
+        );
+        string memory id = string(idBytes);
+        ReturnBill memory _rbill = ReturnBill(id, bill.id, mtn, player, cost);
+        emit OnReturnBillEvent(_rbill);
     }
 
-    function _splitPrize(uint256 prize, address player) internal {
-        uint256 kickback=prize.mul(bulletinBoard.kickbackRate).div(100);
-        uint256 bonusOfPlayer=prize.sub(kickback);
-        uint256 brokerage=kickback.mul(bulletinBoard.brokerageRate).div(100);
-        uint256 tax=kickback.sub(brokerage);
+    function _splitPrize(
+        string memory mtn,
+        uint256 prize,
+        StakeBill memory bill
+    ) internal {
+        address player = bill.owner;
+        uint256 kickback = prize.mul(bulletinBoard.kickbackRate).div(100);
+        uint256 bonusOfPlayer = prize.sub(kickback);
+        uint256 brokerage = kickback.mul(bulletinBoard.brokerageRate).div(100);
+        uint256 tax = kickback.sub(brokerage);
 
-        (bool success, ) = payable(player).call{value: bonusOfPlayer}(new bytes(0));
+        (bool success, ) = payable(player).call{value: bonusOfPlayer}(
+            new bytes(0)
+        );
         require(success, "ETH_TRANSFER_FAILED");
         (bool success1, ) = payable(broker).call{value: brokerage}(
             new bytes(0)
@@ -252,6 +322,26 @@ contract OddsdexContract is IOddsdexContract {
         (bool success2, ) = payable(root).call{value: tax}(new bytes(0));
         require(success2, "ETH_TRANSFER_FAILED");
 
+        bytes memory idBytes = abi.encodePacked(
+            block.timestamp,
+            block.prevrandao
+        );
+        string memory id = string(idBytes);
+        SplitBill memory _sbill = SplitBill(
+            id,
+            bill.id,
+            mtn,
+            player,
+            bulletinBoard.kickbackRate,
+            bulletinBoard.brokerageRate,
+            bulletinBoard.taxRate,
+            prize,
+            bonusOfPlayer,
+            kickback,
+            brokerage,
+            tax
+        );
+        emit OnSplitBillEvent(_sbill);
     }
 
     function _min(uint256 a, uint256 b) internal pure returns (uint256) {
@@ -289,7 +379,7 @@ contract OddsdexContract is IOddsdexContract {
             block.prevrandao
         );
         string memory id = string(idBytes);
-        PlayerBill memory bill = PlayerBill(
+        StakeBill memory bill = StakeBill(
             id,
             msg.sender,
             odds,
@@ -300,7 +390,7 @@ contract OddsdexContract is IOddsdexContract {
             luckyNumber
         );
 
-        playerBills[msg.sender].push(bill);
+        stakeBills[msg.sender].push(bill);
 
         if (buyDirection == CoinDirection.front) {
             buyFrontBillQueue.push(bill);
@@ -310,12 +400,12 @@ contract OddsdexContract is IOddsdexContract {
             _insertionSort(buyBackBillQueue);
         } else {}
 
-        emit OnBuyOrder(bill);
+        emit OnStakeBillEvent(bill);
     }
 
-    function _insertionSort(PlayerBill[] memory a) internal pure {
+    function _insertionSort(StakeBill[] memory a) internal pure {
         for (uint i = 1; i < a.length; i++) {
-            PlayerBill memory temp = a[i];
+            StakeBill memory temp = a[i];
             uint j;
             for (j = i - 1; j >= 0 && temp.buyPrice < a[j].buyPrice; j--)
                 a[j + 1] = a[j];
