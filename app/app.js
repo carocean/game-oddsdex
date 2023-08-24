@@ -95,8 +95,8 @@ http.createServer(async (req, res) => {
     res.end();
     return;
   }
-}).listen(8080, () => {
-  console.log(`Server is running on port 8080`);
+}).listen(8081, () => {
+  console.log(`Server is running on port 8081`);
 })
 
 const callApi = async function (uri, req, res) {

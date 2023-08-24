@@ -1,0 +1,118 @@
+<div class="dx-box">
+    <div class="dx-header">
+        <ul>
+            <li contract><label>合约</label><span>0xiiidksdk</span></li>
+            <li broker><label>经纪人</label><span>0xiiidksdk</span></li>
+        </ul>
+    </div>
+    <div class="dx-layout">
+        <div class="dx-left">
+            <ul class="dx-panel">
+                <li class="dx-dts" state>
+                    <label>状态</label><span>xxx</span>
+                </li>
+                <li class="dx-dts" price>
+                    <label>现价</label><span>xxx</span>odds
+                </li>
+                <li class="dx-dts" kickbackRate>
+                    <label>手续费率</label><span>xxx</span>
+                    <ul>
+                        <li class="dx-dls" brokerageRate>
+                            <p><label>经营者分账比</label><span>xxx</span></p>
+                        </li>
+                        <li class="dx-dls" taxRate>
+                            <p><label>平台分账比</label><span>xxx</span></p>
+                        </li>
+                    </ul>
+                </li>
+                <li class="dx-dts" isRunning>
+                    <label>启/停</label><span>xxx</span>
+                </li>
+                <li class="dx-dts">
+                    <label>经纪人hash</label><span>xxx</span>
+                </li>
+            </ul>
+        </div>
+        <div class="dx-right">
+            <ul class="dx-matchmaking">
+                <li class="dx-mm-head">
+                    <ul class="dx-queue">
+                        <li class="dx-bill">
+                            <ul class="dx-bill-obj">
+                                <li class="dx-field">买价</li>
+                                <li class="dx-field">Odds(个)</li>
+                                <li class="dx-field">玩家</li>
+                            </ul>
+                        </li>
+                    </ul>
+                </li>
+                <li class="dx-front-q">
+                    <ul class="dx-queue">
+                        <li class="dx-bill">
+                            <ul class="dx-bill-obj">
+                                <li class="dx-field">2.35</li>
+                                <li class="dx-field">16</li>
+                                <li class="dx-field">0xiiiddds</li>
+                            </ul>
+                        </li>
+                        <li class="dx-bill">
+                            <ul class="dx-bill-obj">
+                                <li class="dx-field">2.35</li>
+                                <li class="dx-field">16</li>
+                                <li class="dx-field">0xiiiddds</li>
+                            </ul>
+                        </li>
+                    </ul>
+                </li>
+                <li class="dx-diliver"></li>
+                <li class="dx-diliver"></li>
+                <li class="dx-back-q">
+                    <ul class="dx-queue">
+                        <li class="dx-bill">
+                            <ul class="dx-bill-obj">
+                                <li class="dx-field">2.35</li>
+                                <li class="dx-field">16</li>
+                                <li class="dx-field">0xiiiddds</li>
+                            </ul>
+                        </li>
+                        <li class="dx-bill">
+                            <ul class="dx-bill-obj">
+                                <li class="dx-field">2.35</li>
+                                <li class="dx-field">16</li>
+                                <li class="dx-field">0xiiiddds</li>
+                            </ul>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+            <div class="dx-events">事件区</div>
+            <ul class="dx-buy">
+                <li class="dx-buy-odds">
+                    <div><label>odds(个)：</label><input placeholder="输入你想认购的odds数量..."></div>
+                    <p>您需要支付<span>5</span>ETH</p>
+                </li>
+                <li class="dx-buy-lucky"><span title="单击可自定义">8823823</span><a>随机生成</a>
+                    <p>交易所将根据所有玩家的幸运数字计算出哪面赢，算法公平开放且进行不可逆加密运算，保证任何人均无法操控输赢的结果，也无法从结果倒推到幸运数字。玩家可在交易后使用开放算法去校验。</p>
+                </li>
+                <li class="dx-buy-sel">
+                    <ul class="dx-direction">
+                        <li><input type="radio" id="frontDirection" name="direction" value="0" checked />
+                            <label for="frontDirection">正面赢</label>
+                        </li>
+                        <li><input type="radio" id="backDirection" name="direction" value="1" />
+                            <label for="backDirection">背面赢</label>
+                        </li>
+                    </ul>
+                </li>
+                <li class="dx-buy-button"><a>委托买入</a></li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<link href="/css/oddsdex.css" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/web3/4.0.1-alpha.5/web3.min.js"
+    integrity="sha512-NfffVWpEqu1nq+658gzlJQilRBOvjs+PhEKSjT9gkQXRy9OfxI2TOXr33zS7MgGyTpBa5qtC6mKJkQGd9dN/rw=="
+    crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="/js/oddsdex.js">
+</script>

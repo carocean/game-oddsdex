@@ -1,0 +1,76 @@
+
+.mask {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(190, 190, 190, 0.5);
+    z-index: 9999999999999999;
+}
+
+.mask .dialog {
+    padding: 40px;
+    width: 350px;
+    height: 450px;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 50px;
+    background-color: white;
+    opacity: 1;
+}
+
+.mask .dialog p {
+    margin-bottom: 20px;
+}
+
+.mask .dialog p {
+    font-size: 12px;
+    color: grey;
+}
+
+.mask .dialog p[amount] span {
+    color: red;
+    font-size: 45px !important;
+    font-weight: bold;
+}
+
+.mask .dialog select {
+    min-width: 200px;
+    font-size: 14px;
+}
+
+.mask .dialog ul {
+    margin-top: 40px;
+
+}
+
+.mask .dialog ul li {
+    display: inline-block;
+    padding-left: 15px;
+    padding-right: 15px;
+}
+
+.mask .dialog ul li a {
+    display: inline-block;
+    color: white;
+    background-color: green;
+    text-decoration: none;
+    font-size: 12px;
+    padding: 4px 15px;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.mask .dialog p[tips] {
+    margin-top: 20px;
+    font-size: 12px;
+    color: red;
+}
+
+.mask .dialog p[luckyCount] span {
+    color: red;
+    font-size: 16px;
+    padding-left: 10px;
+    display: inline-block;
+}

@@ -1,0 +1,57 @@
+<div class="ix-box">
+    <p class="ix-title">odds交易所合约测试界面</p>
+    <div class="ix-factory">
+        <ul class="ix-balance">
+            <li balance>合约工厂余额：<span>...</span>ETH</li>
+            <li withdraw><a>提现</a></li>
+        </ul>
+        <ul class="ix-form">
+            <li paymethod>
+                <ul class="ix-pay">
+                    <li><input type="radio" id="annualFee" name="payMode" value="1" checked />
+                        <label for="annualFee">年费</label>
+                    </li>
+                    <li><input type="radio" id="monthlyFee" name="payMode" value="2" />
+                        <label for="monthlyFee">月费</label>
+                    </li>
+                </ul>
+            </li>
+            <li amount><span>3</span>eth</li>
+            <li req><a style="cursor: pointer;text-decoration: underline;">申请创建ODDS交易所</a></li>
+        </ul>
+    </div>
+    <div class="ix-contracts">
+        <ul class="ix-head">
+            <li class="ix-tt">ODDS交易所</li>
+            <li class="ix-broker">
+                <label>经纪人</label><select>
+                    <option value="@@">未选择</option>
+                </select>
+            </li>
+            
+        </ul>
+        <ul class="ix-list">
+            <li><label>0</label><a>交易所1</a></li>
+        </ul>
+    </div>
+    <div class="mask" style="display: none;">
+        <div class="dialog">
+            <p amount>你需支付注金<span>2.34</span>ETH</p>
+            <select accounts>
+                <option>选择付款账户</option>
+            </select>
+            <ul ops>
+                <li yes><a>确认支付</a></li>
+                <li no><a>取消支付</a></li>
+            </ul>
+            <p tips><span></span></p>
+        </div>
+    </div>
+</div>
+<link href="/css/factory.css" rel="stylesheet">
+<link href="/css/dialog.css" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/web3/4.0.1-alpha.5/web3.min.js"
+    integrity="sha512-NfffVWpEqu1nq+658gzlJQilRBOvjs+PhEKSjT9gkQXRy9OfxI2TOXr33zS7MgGyTpBa5qtC6mKJkQGd9dN/rw=="
+    crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="/js/index.js">
+</script>

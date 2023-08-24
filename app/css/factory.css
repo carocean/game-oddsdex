@@ -1,0 +1,114 @@
+.ix-box{
+    text-align: center;
+    position: relative;
+}
+.ix-box .ix-title{
+    color: grey;
+    text-align: left;
+    font-size: 12px;
+    padding-top: 10px;
+    padding-left: 15px;
+}
+.ix-box ul li{
+    list-style-type: none;
+}
+.ix-box .ix-factory{
+    margin-top: 96px;
+}
+
+.ix-box .ix-balance{
+    font-size: 14px;
+    color: grey;
+    border-bottom: 1px solid #ececec;
+    margin-bottom: 30px;
+    padding-bottom: 10px;
+}
+.ix-box .ix-balance span{
+    font-size: 18px;
+    color: red;
+    display: inline-block;
+    padding-right: 10px;
+}
+.ix-box .ix-balance li{
+    display: inline-block;
+    padding: 5px 30px;
+    margin: 0 20px;
+}
+.ix-box .ix-balance li[withdraw]{
+    background-color: green;
+    color: white;
+    font-size: 12px;
+    border-radius: 8px;
+    cursor: pointer;
+}
+.ix-box .ix-factory .ix-form{
+    max-width: 300px;
+    background-color: #f5f5f5;
+    margin: 0 auto;
+    padding: 20px 40px;
+    border-radius: 8px;
+    box-shadow: inset;
+}
+.ix-box .ix-factory .ix-form>li{
+    margin: 30px 0;
+}
+.ix-box .ix-factory .ix-form>li[paymethod] ul li{
+    display: inline-block;
+    margin: 0 20px;
+}
+.ix-box .ix-factory .ix-form>li[amount]{
+   font-size: 14px;
+   color: grey;
+}
+.ix-box .ix-factory .ix-form>li[amount] span{
+    font-size: 50px;
+    color: red;
+    display: inline-block;
+    padding: 5px;
+}
+.ix-box .ix-contracts{
+    text-align: left;
+    margin-top: 40px;
+}
+.ix-box .ix-contracts .ix-head{
+    border-bottom: 1px solid #ececec;
+    padding-bottom: 15px;
+    padding-left: 0;
+}
+.ix-box .ix-contracts .ix-head >li{
+    display: inline-block;
+    margin: 0 20px;
+    font-size: 14px;
+}
+.ix-box .ix-contracts .ix-head >li label{
+    display: inline-block;
+    padding: 0 5px;
+    color: grey;
+}
+.ix-box .ix-contracts .ix-head >li.ix-tt{
+    font-size: 25px;
+    font-weight: bold;
+    color: black;
+    margin-left: 0 !important;
+}
+.ix-box .ix-contracts .ix-head>li select{
+    min-width: 120px !important;
+    font-size: 12px !important;
+}
+.ix-box .ix-contracts .ix-list{
+    margin-top: 40px;
+    padding-left: 30px;
+    display: none;
+}
+.ix-box .ix-contracts .ix-list li{
+    margin: 25px 0;
+}
+.ix-box .ix-contracts .ix-list li a{
+    display: inline-block;
+    padding: 0 20px;
+    cursor: pointer;
+    font-size: 14px;
+}
+.ix-box .ix-contracts .ix-list li a:hover{
+    color: blue;
+}

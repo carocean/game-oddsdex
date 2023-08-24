@@ -35,6 +35,8 @@ contract OddsdexContract is IOddsdexContract {
             brokerageRate,
             taxRate
         );
+        state=OddsdexState.matchmaked;
+        running=true;
     }
 
     modifier onlyRoot() {
