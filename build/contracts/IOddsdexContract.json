@@ -98,12 +98,12 @@
             },
             {
               "internalType": "uint256",
-              "name": "tailFReturnCosts",
+              "name": "tailFRefundCosts",
               "type": "uint256"
             },
             {
               "internalType": "uint256",
-              "name": "tailBReturnCosts",
+              "name": "tailBRefundCosts",
               "type": "uint256"
             },
             {
@@ -153,12 +153,12 @@
             }
           ],
           "indexed": false,
-          "internalType": "struct ReturnBill",
+          "internalType": "struct RefundBill",
           "name": "bill",
           "type": "tuple"
         }
       ],
-      "name": "OnReturnBillEvent",
+      "name": "OnRefundBillEvent",
       "type": "event"
     },
     {
@@ -518,7 +518,7 @@
       "type": "function"
     }
   ],
-  "metadata": "{\"compiler\":{\"version\":\"0.8.19+commit.7dd6d404\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"anonymous\":false,\"inputs\":[{\"components\":[{\"internalType\":\"enum CoinDirection\",\"name\":\"winningDirection\",\"type\":\"uint8\"},{\"internalType\":\"uint256\",\"name\":\"luckyNumber\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"broker\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"coverHash\",\"type\":\"uint256\"}],\"indexed\":false,\"internalType\":\"struct LotteryMessage\",\"name\":\"message\",\"type\":\"tuple\"}],\"name\":\"OnLotteryEvent\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"components\":[{\"internalType\":\"string\",\"name\":\"id\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"refFId\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"refBId\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"mtn\",\"type\":\"string\"},{\"internalType\":\"address\",\"name\":\"broker\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"dealOdds\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"dealPrice\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"tailFOdds\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"tailBOdds\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"tailFCostOnBill\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"tailBCostOnBill\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"tailFReturnCosts\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"tailBReturnCosts\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"prize\",\"type\":\"uint256\"}],\"indexed\":false,\"internalType\":\"struct MatchmakingBill\",\"name\":\"bill\",\"type\":\"tuple\"}],\"name\":\"OnMatchMakingEvent\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"components\":[{\"internalType\":\"string\",\"name\":\"id\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"refId\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"mtn\",\"type\":\"string\"},{\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"costs\",\"type\":\"uint256\"}],\"indexed\":false,\"internalType\":\"struct ReturnBill\",\"name\":\"bill\",\"type\":\"tuple\"}],\"name\":\"OnReturnBillEvent\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"components\":[{\"internalType\":\"string\",\"name\":\"id\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"refId\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"mtn\",\"type\":\"string\"},{\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"},{\"internalType\":\"uint16\",\"name\":\"kickbackRate\",\"type\":\"uint16\"},{\"internalType\":\"uint16\",\"name\":\"brokerageRate\",\"type\":\"uint16\"},{\"internalType\":\"uint16\",\"name\":\"taxRate\",\"type\":\"uint16\"},{\"internalType\":\"uint256\",\"name\":\"prize\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"bonus\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"kickback\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"brokerage\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"tax\",\"type\":\"uint256\"}],\"indexed\":false,\"internalType\":\"struct SplitBill\",\"name\":\"bill\",\"type\":\"tuple\"}],\"name\":\"OnSplitBillEvent\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"components\":[{\"internalType\":\"string\",\"name\":\"id\",\"type\":\"string\"},{\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"odds\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"costs\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"buyPrice\",\"type\":\"uint256\"},{\"internalType\":\"enum CoinDirection\",\"name\":\"buyDirection\",\"type\":\"uint8\"},{\"internalType\":\"uint256\",\"name\":\"gas\",\"type\":\"uint256\"},{\"internalType\":\"uint32\",\"name\":\"luckyNumber\",\"type\":\"uint32\"}],\"indexed\":false,\"internalType\":\"struct StakeBill\",\"name\":\"bill\",\"type\":\"tuple\"}],\"name\":\"OnStakeBillEvent\",\"type\":\"event\"},{\"inputs\":[],\"name\":\"canMatchmaking\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_hash\",\"type\":\"uint256\"}],\"name\":\"cover\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getBroker\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getBulletinBoard\",\"outputs\":[{\"components\":[{\"internalType\":\"uint256\",\"name\":\"oddunit\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"price\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"odds\",\"type\":\"uint256\"},{\"internalType\":\"uint16\",\"name\":\"kickbackRate\",\"type\":\"uint16\"},{\"internalType\":\"uint16\",\"name\":\"brokerageRate\",\"type\":\"uint16\"},{\"internalType\":\"uint16\",\"name\":\"taxRate\",\"type\":\"uint16\"}],\"internalType\":\"struct BulletinBoard\",\"name\":\"\",\"type\":\"tuple\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getRoot\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getState\",\"outputs\":[{\"internalType\":\"enum OddsdexState\",\"name\":\"\",\"type\":\"uint8\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getWeiPrice\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getWinningDirection\",\"outputs\":[{\"internalType\":\"enum CoinDirection\",\"name\":\"\",\"type\":\"uint8\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"isRunning\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_luckyNumber\",\"type\":\"uint256\"}],\"name\":\"lottery\",\"outputs\":[{\"internalType\":\"enum CoinDirection\",\"name\":\"\",\"type\":\"uint8\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"matchmake\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_player\",\"type\":\"address\"}],\"name\":\"oddBalanceOf\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"run\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"enum CoinDirection\",\"name\":\"buyDirection\",\"type\":\"uint8\"},{\"internalType\":\"uint32\",\"name\":\"luckyNumber\",\"type\":\"uint32\"}],\"name\":\"stake\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"stop\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"project:/contracts/IOddsdex.sol\":\"IOddsdexContract\"},\"evmVersion\":\"paris\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":false,\"runs\":200},\"remappings\":[]},\"sources\":{\"project:/contracts/IOddsdex.sol\":{\"keccak256\":\"0x9251199f264043e664da7a6cfa6fd65fa79ca89c38f4983211c2724b782a4898\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://24c1ee8f39419820b0d46cf677ef6f6d021e0652aceacc83d250bdaaf4a6b3aa\",\"dweb:/ipfs/QmZsNyoxVod5MwL3LdZpuSjEdbEcC1SMHRRFtDfQJPJnAr\"]}},\"version\":1}",
+  "metadata": "{\"compiler\":{\"version\":\"0.8.19+commit.7dd6d404\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"anonymous\":false,\"inputs\":[{\"components\":[{\"internalType\":\"enum CoinDirection\",\"name\":\"winningDirection\",\"type\":\"uint8\"},{\"internalType\":\"uint256\",\"name\":\"luckyNumber\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"broker\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"coverHash\",\"type\":\"uint256\"}],\"indexed\":false,\"internalType\":\"struct LotteryMessage\",\"name\":\"message\",\"type\":\"tuple\"}],\"name\":\"OnLotteryEvent\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"components\":[{\"internalType\":\"string\",\"name\":\"id\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"refFId\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"refBId\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"mtn\",\"type\":\"string\"},{\"internalType\":\"address\",\"name\":\"broker\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"dealOdds\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"dealPrice\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"tailFOdds\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"tailBOdds\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"tailFCostOnBill\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"tailBCostOnBill\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"tailFRefundCosts\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"tailBRefundCosts\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"prize\",\"type\":\"uint256\"}],\"indexed\":false,\"internalType\":\"struct MatchmakingBill\",\"name\":\"bill\",\"type\":\"tuple\"}],\"name\":\"OnMatchMakingEvent\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"components\":[{\"internalType\":\"string\",\"name\":\"id\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"refId\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"mtn\",\"type\":\"string\"},{\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"costs\",\"type\":\"uint256\"}],\"indexed\":false,\"internalType\":\"struct RefundBill\",\"name\":\"bill\",\"type\":\"tuple\"}],\"name\":\"OnRefundBillEvent\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"components\":[{\"internalType\":\"string\",\"name\":\"id\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"refId\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"mtn\",\"type\":\"string\"},{\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"},{\"internalType\":\"uint16\",\"name\":\"kickbackRate\",\"type\":\"uint16\"},{\"internalType\":\"uint16\",\"name\":\"brokerageRate\",\"type\":\"uint16\"},{\"internalType\":\"uint16\",\"name\":\"taxRate\",\"type\":\"uint16\"},{\"internalType\":\"uint256\",\"name\":\"prize\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"bonus\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"kickback\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"brokerage\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"tax\",\"type\":\"uint256\"}],\"indexed\":false,\"internalType\":\"struct SplitBill\",\"name\":\"bill\",\"type\":\"tuple\"}],\"name\":\"OnSplitBillEvent\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"components\":[{\"internalType\":\"string\",\"name\":\"id\",\"type\":\"string\"},{\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"odds\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"costs\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"buyPrice\",\"type\":\"uint256\"},{\"internalType\":\"enum CoinDirection\",\"name\":\"buyDirection\",\"type\":\"uint8\"},{\"internalType\":\"uint256\",\"name\":\"gas\",\"type\":\"uint256\"},{\"internalType\":\"uint32\",\"name\":\"luckyNumber\",\"type\":\"uint32\"}],\"indexed\":false,\"internalType\":\"struct StakeBill\",\"name\":\"bill\",\"type\":\"tuple\"}],\"name\":\"OnStakeBillEvent\",\"type\":\"event\"},{\"inputs\":[],\"name\":\"canMatchmaking\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_hash\",\"type\":\"uint256\"}],\"name\":\"cover\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getBroker\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getBulletinBoard\",\"outputs\":[{\"components\":[{\"internalType\":\"uint256\",\"name\":\"oddunit\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"price\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"odds\",\"type\":\"uint256\"},{\"internalType\":\"uint16\",\"name\":\"kickbackRate\",\"type\":\"uint16\"},{\"internalType\":\"uint16\",\"name\":\"brokerageRate\",\"type\":\"uint16\"},{\"internalType\":\"uint16\",\"name\":\"taxRate\",\"type\":\"uint16\"}],\"internalType\":\"struct BulletinBoard\",\"name\":\"\",\"type\":\"tuple\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getRoot\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getState\",\"outputs\":[{\"internalType\":\"enum OddsdexState\",\"name\":\"\",\"type\":\"uint8\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getWeiPrice\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getWinningDirection\",\"outputs\":[{\"internalType\":\"enum CoinDirection\",\"name\":\"\",\"type\":\"uint8\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"isRunning\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_luckyNumber\",\"type\":\"uint256\"}],\"name\":\"lottery\",\"outputs\":[{\"internalType\":\"enum CoinDirection\",\"name\":\"\",\"type\":\"uint8\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"matchmake\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_player\",\"type\":\"address\"}],\"name\":\"oddBalanceOf\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"run\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"enum CoinDirection\",\"name\":\"buyDirection\",\"type\":\"uint8\"},{\"internalType\":\"uint32\",\"name\":\"luckyNumber\",\"type\":\"uint32\"}],\"name\":\"stake\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"stop\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"project:/contracts/IOddsdex.sol\":\"IOddsdexContract\"},\"evmVersion\":\"byzantium\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[]},\"sources\":{\"project:/contracts/IOddsdex.sol\":{\"keccak256\":\"0x70d08bd0ac33906bcd8645e80c40ec3dd0fc0e571d5ad4a53e47f7a2a8a35c9b\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://11da7408a3b614a0f19d78959533e2c3628baada5be3725b41421d81a0ece425\",\"dweb:/ipfs/QmUspYuvLpBJboiqiaXMShZ5RzJGHDFDpVYBcm4uH4zZ8m\"]}},\"version\":1}",
   "bytecode": "0x",
   "deployedBytecode": "0x",
   "immutableReferences": {},
@@ -526,7 +526,7 @@
   "deployedGeneratedSources": [],
   "sourceMap": "",
   "deployedSourceMap": "",
-  "source": "// SPDX-License-Identifier: MIT\npragma solidity >=0.4.22 <0.8.20;\n\n//内部发动机自行运转，捫、开、撮、捫、开、撮……\n//输赢：合约每次生成的随机数+所有玩家的幸运数 -> %2\ninterface IOddsdexContract {\n    function getState() external returns (OddsdexState);\n\n    function getWinningDirection() external returns (CoinDirection);\n\n    function getWeiPrice() external returns (uint256);\n\n    function getBulletinBoard() external returns (BulletinBoard memory);\n\n    function canMatchmaking() external returns (bool);\n\n    function isRunning() external returns (bool);\n\n    function stop() external;\n\n    function run() external;\n\n    function getRoot() external returns (address);\n\n    function getBroker() external returns (address);\n\n    function oddBalanceOf(address _player) external returns (uint256);\n\n    function cover(uint256 _hash) external;\n\n    function lottery(uint256 _luckyNumber) external returns (CoinDirection);\n\n    function matchmake() external;\n\n    function stake(\n        CoinDirection buyDirection,\n        uint32 luckyNumber\n    ) external payable;\n\n    event OnLotteryEvent(LotteryMessage message);\n\n    event OnMatchMakingEvent(MatchmakingBill bill);\n    event OnStakeBillEvent(StakeBill bill);\n    event OnReturnBillEvent(ReturnBill bill);\n    event OnSplitBillEvent(SplitBill bill);\n}\nstruct LotteryMessage {\n    CoinDirection winningDirection;\n    uint256 luckyNumber;\n    address broker;\n    uint256 coverHash;\n}\nenum CoinDirection {\n    unknown,\n    front,\n    back\n}\nenum OddsdexState {\n    covering,\n    lottering,\n    lottered,\n    matchmaking,\n    matchmaked\n}\nstruct BulletinBoard {\n    uint256 oddunit;\n    uint256 price;\n    uint256 odds;\n    uint16 kickbackRate;\n    uint16 brokerageRate;\n    uint16 taxRate;\n}\nstruct StakeBill {\n    string id;\n    address owner;\n    uint256 odds;\n    uint256 costs;\n    uint256 buyPrice;\n    CoinDirection buyDirection;\n    uint256 gas;\n    uint32 luckyNumber;\n}\nstruct MatchmakingBill {\n    string id;\n    string refFId;\n    string refBId;\n    string mtn; //Matchmaking transaction number\n    address broker;\n    uint256 dealOdds;\n    uint256 dealPrice;\n    uint256 tailFOdds;\n    uint256 tailBOdds;\n    uint256 tailFCostOnBill;\n    uint256 tailBCostOnBill;\n    uint256 tailFReturnCosts;\n    uint256 tailBReturnCosts;\n    uint256 prize;\n}\nstruct ReturnBill {\n    string id;\n    string refId;\n    string mtn; //Matchmaking transaction number\n    address owner;\n    uint256 costs;\n}\nstruct SplitBill {\n    string id;\n    string refId;\n    string mtn; //Matchmaking transaction number\n    address owner;\n    uint16 kickbackRate;\n    uint16 brokerageRate;\n    uint16 taxRate;\n    uint256 prize;\n    uint256 bonus;\n    uint256 kickback;\n    uint256 brokerage;\n    uint256 tax;\n}\n",
+  "source": "// SPDX-License-Identifier: MIT\npragma solidity >=0.4.22 <0.8.20;\n\n//内部发动机自行运转，捫、开、撮、捫、开、撮……\n//输赢：合约每次生成的随机数+所有玩家的幸运数 -> %2\ninterface IOddsdexContract {\n    function getState() external returns (OddsdexState);\n\n    function getWinningDirection() external returns (CoinDirection);\n\n    function getWeiPrice() external returns (uint256);\n\n    function getBulletinBoard() external returns (BulletinBoard memory);\n\n    function canMatchmaking() external returns (bool);\n\n    function isRunning() external returns (bool);\n\n    function stop() external;\n\n    function run() external;\n\n    function getRoot() external returns (address);\n\n    function getBroker() external returns (address);\n\n    function oddBalanceOf(address _player) external returns (uint256);\n\n    function cover(uint256 _hash) external;\n\n    function lottery(uint256 _luckyNumber) external returns (CoinDirection);\n\n    function matchmake() external;\n\n    function stake(\n        CoinDirection buyDirection,\n        uint32 luckyNumber\n    ) external payable;\n\n    event OnLotteryEvent(LotteryMessage message);\n\n    event OnMatchMakingEvent(MatchmakingBill bill);\n    event OnStakeBillEvent(StakeBill bill);\n    event OnRefundBillEvent(RefundBill bill);\n    event OnSplitBillEvent(SplitBill bill);\n}\nstruct LotteryMessage {\n    CoinDirection winningDirection;\n    uint256 luckyNumber;\n    address broker;\n    uint256 coverHash;\n}\nenum CoinDirection {\n    unknown,\n    front,\n    back\n}\nenum OddsdexState {\n    covering,\n    lottering,\n    lottered,\n    matchmaking,\n    matchmaked\n}\nstruct BulletinBoard {\n    uint256 oddunit;\n    uint256 price;\n    uint256 odds;\n    uint16 kickbackRate;\n    uint16 brokerageRate;\n    uint16 taxRate;\n}\nstruct StakeBill {\n    string id;\n    address owner;\n    uint256 odds;\n    uint256 costs;\n    uint256 buyPrice;\n    CoinDirection buyDirection;\n    uint256 gas;\n    uint32 luckyNumber;\n}\nstruct MatchmakingBill {\n    string id;\n    string refFId;\n    string refBId;\n    string mtn; //Matchmaking transaction number\n    address broker;\n    uint256 dealOdds;\n    uint256 dealPrice;\n    uint256 tailFOdds;\n    uint256 tailBOdds;\n    uint256 tailFCostOnBill;\n    uint256 tailBCostOnBill;\n    uint256 tailFRefundCosts;\n    uint256 tailBRefundCosts;\n    uint256 prize;\n}\nstruct RefundBill {\n    string id;\n    string refId;\n    string mtn; //Matchmaking transaction number\n    address owner;\n    uint256 costs;\n}\nstruct SplitBill {\n    string id;\n    string refId;\n    string mtn; //Matchmaking transaction number\n    address owner;\n    uint16 kickbackRate;\n    uint16 brokerageRate;\n    uint16 taxRate;\n    uint256 prize;\n    uint256 bonus;\n    uint256 kickback;\n    uint256 brokerage;\n    uint256 tax;\n}\n",
   "sourcePath": "/Users/cj/games/game-oddsdex/contracts/IOddsdex.sol",
   "ast": {
     "absolutePath": "project:/contracts/IOddsdex.sol",
@@ -549,7 +549,7 @@
       "OddsdexState": [
         783
       ],
-      "ReturnBill": [
+      "RefundBill": [
         854
       ],
       "SplitBill": [
@@ -1633,9 +1633,9 @@
           },
           {
             "anonymous": false,
-            "eventSelector": "41a2c219f9ce41e35d569f8344b9c242cb02d5f54a4395610d3f44eb2c142e9f",
+            "eventSelector": "760319905fd44c644230d3f078affa81e7c8a27e9cb832f3a973dc98759abcf4",
             "id": 757,
-            "name": "OnReturnBillEvent",
+            "name": "OnRefundBillEvent",
             "nameLocation": "1269:17:2",
             "nodeType": "EventDefinition",
             "parameters": {
@@ -1655,15 +1655,15 @@
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
-                    "typeIdentifier": "t_struct$_ReturnBill_$854_memory_ptr",
-                    "typeString": "struct ReturnBill"
+                    "typeIdentifier": "t_struct$_RefundBill_$854_memory_ptr",
+                    "typeString": "struct RefundBill"
                   },
                   "typeName": {
                     "id": 754,
                     "nodeType": "UserDefinedTypeName",
                     "pathNode": {
                       "id": 753,
-                      "name": "ReturnBill",
+                      "name": "RefundBill",
                       "nameLocations": [
                         "1287:10:2"
                       ],
@@ -1674,8 +1674,8 @@
                     "referencedDeclaration": 854,
                     "src": "1287:10:2",
                     "typeDescriptions": {
-                      "typeIdentifier": "t_struct$_ReturnBill_$854_storage_ptr",
-                      "typeString": "struct ReturnBill"
+                      "typeIdentifier": "t_struct$_RefundBill_$854_storage_ptr",
+                      "typeString": "struct RefundBill"
                     }
                   },
                   "visibility": "internal"
@@ -2670,7 +2670,7 @@
             "constant": false,
             "id": 838,
             "mutability": "mutable",
-            "name": "tailFReturnCosts",
+            "name": "tailFRefundCosts",
             "nameLocation": "2283:16:2",
             "nodeType": "VariableDeclaration",
             "scope": 843,
@@ -2697,7 +2697,7 @@
             "constant": false,
             "id": 840,
             "mutability": "mutable",
-            "name": "tailBReturnCosts",
+            "name": "tailBRefundCosts",
             "nameLocation": "2313:16:2",
             "nodeType": "VariableDeclaration",
             "scope": 843,
@@ -2756,7 +2756,7 @@
         "visibility": "public"
       },
       {
-        "canonicalName": "ReturnBill",
+        "canonicalName": "RefundBill",
         "id": 854,
         "members": [
           {
@@ -2896,7 +2896,7 @@
             "visibility": "internal"
           }
         ],
-        "name": "ReturnBill",
+        "name": "RefundBill",
         "nameLocation": "2359:10:2",
         "nodeType": "StructDefinition",
         "scope": 880,
@@ -3249,7 +3249,7 @@
   },
   "networks": {},
   "schemaVersion": "3.4.14",
-  "updatedAt": "2023-08-23T16:36:42.986Z",
+  "updatedAt": "2023-08-24T00:29:51.185Z",
   "devdoc": {
     "kind": "dev",
     "methods": {},

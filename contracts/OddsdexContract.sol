@@ -210,8 +210,8 @@ contract OddsdexContract is IOddsdexContract {
         bytes idBytes;
         string mtn;
         uint256 prize;
-        uint256 tailFReturnCost;
-        uint256 tailBReturnCost;
+        uint256 tailFRefundCost;
+        uint256 tailBRefundCost;
         bytes idNewBytes;
         string id;
     }
@@ -236,7 +236,7 @@ contract OddsdexContract is IOddsdexContract {
         lvar.tailFCostOnBill = lvar.tailFOdds.mul(lvar.tailF.buyPrice);
         lvar.tailBCostOnBill = lvar.tailBOdds.mul(lvar.tailB.buyPrice);
 
-        lvar.idBytes = abi.encodePacked(block.timestamp, block.prevrandao);
+        lvar.idBytes = abi.encodePacked(block.timestamp, block.difficulty);
         //mtn is Matchmaking transaction number
         lvar.mtn = string(lvar.idBytes);
 
@@ -252,15 +252,15 @@ contract OddsdexContract is IOddsdexContract {
         }
 
         lvar.prize = lvar.dealOdds.mul(lvar.dealPrice);
-        lvar.tailFReturnCost = lvar.tailF.odds.mul(lvar.tailF.buyPrice).sub(
+        lvar.tailFRefundCost = lvar.tailF.odds.mul(lvar.tailF.buyPrice).sub(
             lvar.tailFCostOnBill
         );
-        lvar.tailBReturnCost = lvar.tailB.odds.mul(lvar.tailB.buyPrice).sub(
+        lvar.tailBRefundCost = lvar.tailB.odds.mul(lvar.tailB.buyPrice).sub(
             lvar.tailBCostOnBill
         );
 
-        _returnCost(lvar.mtn, lvar.tailFReturnCost, lvar.tailF);
-        _returnCost(lvar.mtn, lvar.tailBReturnCost, lvar.tailB);
+        _refundCost(lvar.mtn, lvar.tailFRefundCost, lvar.tailF);
+        _refundCost(lvar.mtn, lvar.tailBRefundCost, lvar.tailB);
 
         if (winningDirection == CoinDirection.front) {
             _splitPrize(lvar.mtn, lvar.prize, lvar.tailF);
@@ -271,7 +271,7 @@ contract OddsdexContract is IOddsdexContract {
         bulletinBoard.price = lvar.dealPrice;
         bulletinBoard.odds -= lvar.dealOdds;
 
-        lvar.idNewBytes = abi.encodePacked(block.timestamp, block.prevrandao);
+        lvar.idNewBytes = abi.encodePacked(block.timestamp, block.difficulty);
         lvar.id = string(lvar.idNewBytes);
 
         MatchmakingBill memory _mbill = MatchmakingBill(
@@ -286,14 +286,14 @@ contract OddsdexContract is IOddsdexContract {
             lvar.tailBOdds,
             lvar.tailFCostOnBill,
             lvar.tailBCostOnBill,
-            lvar.tailFReturnCost,
-            lvar.tailBReturnCost,
+            lvar.tailFRefundCost,
+            lvar.tailBRefundCost,
             lvar.prize
         );
         emit OnMatchMakingEvent(_mbill);
     }
 
-    function _returnCost(
+    function _refundCost(
         string memory mtn,
         uint256 cost,
         StakeBill memory bill
@@ -304,11 +304,11 @@ contract OddsdexContract is IOddsdexContract {
 
         bytes memory idBytes = abi.encodePacked(
             block.timestamp,
-            block.prevrandao
+            block.difficulty
         );
         string memory id = string(idBytes);
-        ReturnBill memory _rbill = ReturnBill(id, bill.id, mtn, player, cost);
-        emit OnReturnBillEvent(_rbill);
+        RefundBill memory _rbill = RefundBill(id, bill.id, mtn, player, cost);
+        emit OnRefundBillEvent(_rbill);
     }
 
     function _splitPrize(
@@ -335,7 +335,7 @@ contract OddsdexContract is IOddsdexContract {
 
         bytes memory idBytes = abi.encodePacked(
             block.timestamp,
-            block.prevrandao
+            block.difficulty
         );
         string memory id = string(idBytes);
         SplitBill memory _sbill = SplitBill(
@@ -387,7 +387,7 @@ contract OddsdexContract is IOddsdexContract {
 
         bytes memory idBytes = abi.encodePacked(
             block.timestamp,
-            block.prevrandao
+            block.difficulty
         );
         string memory id = string(idBytes);
         StakeBill memory bill = StakeBill(

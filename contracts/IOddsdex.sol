@@ -41,7 +41,7 @@ interface IOddsdexContract {
 
     event OnMatchMakingEvent(MatchmakingBill bill);
     event OnStakeBillEvent(StakeBill bill);
-    event OnReturnBillEvent(ReturnBill bill);
+    event OnRefundBillEvent(RefundBill bill);
     event OnSplitBillEvent(SplitBill bill);
 }
 struct LotteryMessage {
@@ -92,11 +92,11 @@ struct MatchmakingBill {
     uint256 tailBOdds;
     uint256 tailFCostOnBill;
     uint256 tailBCostOnBill;
-    uint256 tailFReturnCosts;
-    uint256 tailBReturnCosts;
+    uint256 tailFRefundCosts;
+    uint256 tailBRefundCosts;
     uint256 prize;
 }
-struct ReturnBill {
+struct RefundBill {
     string id;
     string refId;
     string mtn; //Matchmaking transaction number
