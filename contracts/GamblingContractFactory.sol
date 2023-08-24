@@ -9,8 +9,8 @@ contract GamblingContractFactory is IGamblingContractFactory {
 
     address public root;
     address[] public contracts;
-    mapping(address => address[]) contractsOfBroker;
-    address[] brokers;
+    mapping(address => address[]) public contractsOfBroker;
+    address[] public brokers;
     mapping(address => ApplyRights) private rights;
     uint256 private annualFee = 4200000000000000000; //4.2 ether
     uint256 private monthlyFee = 400000000000000000; //0.4 ether

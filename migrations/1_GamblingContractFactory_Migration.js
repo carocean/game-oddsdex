@@ -5,6 +5,6 @@ module.exports = function (deployer, network, accounts) {
         var a = accounts[i];
         console.log(a);
     }
-    deployer.deploy(OddsdexContract, accounts[0], accounts[0]);
+    deployer.deploy(OddsdexContract, accounts[0], accounts[1]);
     deployer.deploy(GamblingContractFactory);
 }

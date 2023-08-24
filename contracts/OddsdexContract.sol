@@ -14,9 +14,9 @@ contract OddsdexContract is IOddsdexContract {
     BulletinBoard private bulletinBoard;
     uint256 private coverHash;
     CoinDirection private winningDirection;
-    mapping(address => StakeBill[]) stakeBills;
-    StakeBill[] buyFrontBillQueue;
-    StakeBill[] buyBackBillQueue;
+    mapping(address => StakeBill[]) private stakeBills;
+    StakeBill[] private buyFrontBillQueue;
+    StakeBill[] private buyBackBillQueue;
 
     constructor(address _root, address _broker) {
         parent = msg.sender;
@@ -192,92 +192,103 @@ contract OddsdexContract is IOddsdexContract {
             "Must have lottered before calling"
         );
         state == OddsdexState.matchmaking;
-        if (canMatchmaking()) {
+        while (canMatchmaking()) {
             _matchmakePairBill();
         }
         state == OddsdexState.matchmaked;
     }
 
+    struct LocalVar {
+        StakeBill tailF;
+        StakeBill tailB;
+        uint256 dealOdds;
+        uint256 dealPrice;
+        uint256 tailFOdds;
+        uint256 tailBOdds;
+        uint256 tailFCostOnBill;
+        uint256 tailBCostOnBill;
+        bytes idBytes;
+        string mtn;
+        uint256 prize;
+        uint256 tailFReturnCost;
+        uint256 tailBReturnCost;
+        bytes idNewBytes;
+        string id;
+    }
+
     function _matchmakePairBill() internal {
+        LocalVar memory lvar;
         //撮合一次对单之后，吃不掉的还在队列中，因此等下轮撮合，所以只考虑撮合当前对单即可
-        StakeBill memory tailF;
         if (buyFrontBillQueue.length > 0) {
-            tailF = buyFrontBillQueue[buyFrontBillQueue.length - 1];
+            lvar.tailF = buyFrontBillQueue[buyFrontBillQueue.length - 1];
             buyFrontBillQueue.pop();
         }
 
-        StakeBill memory tailB;
         if (buyBackBillQueue.length > 0) {
-            tailB = buyBackBillQueue[buyBackBillQueue.length - 1];
+            lvar.tailB = buyBackBillQueue[buyBackBillQueue.length - 1];
             buyBackBillQueue.pop();
         }
 
-        uint256 dealOdds = _min(tailF.odds, tailB.odds);
-        uint256 dealPrice = (tailF.buyPrice.add(tailB.buyPrice)).div(2);
-        uint256 tailFOdds = tailF.odds.sub(dealOdds);
-        uint256 tailBOdds = tailB.odds.sub(dealOdds);
-        uint256 tailFCostOnBill = tailFOdds.mul(tailF.buyPrice);
-        uint256 tailBCostOnBill = tailBOdds.mul(tailB.buyPrice);
+        lvar.dealOdds = _min(lvar.tailF.odds, lvar.tailB.odds);
+        lvar.dealPrice = (lvar.tailF.buyPrice.add(lvar.tailB.buyPrice)).div(2);
+        lvar.tailFOdds = lvar.tailF.odds.sub(lvar.dealOdds);
+        lvar.tailBOdds = lvar.tailB.odds.sub(lvar.dealOdds);
+        lvar.tailFCostOnBill = lvar.tailFOdds.mul(lvar.tailF.buyPrice);
+        lvar.tailBCostOnBill = lvar.tailBOdds.mul(lvar.tailB.buyPrice);
 
-        bytes memory idBytes = abi.encodePacked(
-            block.timestamp,
-            block.prevrandao
-        );
+        lvar.idBytes = abi.encodePacked(block.timestamp, block.prevrandao);
         //mtn is Matchmaking transaction number
-        string memory mtn = string(idBytes);
+        lvar.mtn = string(lvar.idBytes);
 
-        if (tailFOdds > 0) {
-            tailF.costs = tailFCostOnBill;
-            tailF.odds = tailFOdds;
-            buyFrontBillQueue.push(tailF);
+        if (lvar.tailFOdds > 0) {
+            lvar.tailF.costs = lvar.tailFCostOnBill;
+            lvar.tailF.odds = lvar.tailFOdds;
+            buyFrontBillQueue.push(lvar.tailF);
         }
-        if (tailBOdds > 0) {
-            tailB.costs = tailBCostOnBill;
-            tailB.odds = tailBOdds;
-            buyBackBillQueue.push(tailB);
+        if (lvar.tailBOdds > 0) {
+            lvar.tailB.costs = lvar.tailBCostOnBill;
+            lvar.tailB.odds = lvar.tailBOdds;
+            buyBackBillQueue.push(lvar.tailB);
         }
 
-        uint256 prize = dealOdds.mul(dealPrice);
-        uint256 tailFReturnCost = tailF.odds.mul(tailF.buyPrice).sub(
-            tailFCostOnBill
+        lvar.prize = lvar.dealOdds.mul(lvar.dealPrice);
+        lvar.tailFReturnCost = lvar.tailF.odds.mul(lvar.tailF.buyPrice).sub(
+            lvar.tailFCostOnBill
         );
-        uint256 tailBReturnCost = tailB.odds.mul(tailB.buyPrice).sub(
-            tailBCostOnBill
+        lvar.tailBReturnCost = lvar.tailB.odds.mul(lvar.tailB.buyPrice).sub(
+            lvar.tailBCostOnBill
         );
 
-        _returnCost(mtn, tailFReturnCost, tailF);
-        _returnCost(mtn, tailBReturnCost, tailB);
+        _returnCost(lvar.mtn, lvar.tailFReturnCost, lvar.tailF);
+        _returnCost(lvar.mtn, lvar.tailBReturnCost, lvar.tailB);
 
         if (winningDirection == CoinDirection.front) {
-            _splitPrize(mtn, prize, tailF);
+            _splitPrize(lvar.mtn, lvar.prize, lvar.tailF);
         } else if (winningDirection == CoinDirection.back) {
-            _splitPrize(mtn, prize, tailB);
+            _splitPrize(lvar.mtn, lvar.prize, lvar.tailB);
         } else {}
 
-        bulletinBoard.price = dealPrice;
-        bulletinBoard.odds -= dealOdds;
+        bulletinBoard.price = lvar.dealPrice;
+        bulletinBoard.odds -= lvar.dealOdds;
 
-        bytes memory idNewBytes = abi.encodePacked(
-            block.timestamp,
-            block.prevrandao
-        );
-        string memory id = string(idNewBytes);
+        lvar.idNewBytes = abi.encodePacked(block.timestamp, block.prevrandao);
+        lvar.id = string(lvar.idNewBytes);
 
         MatchmakingBill memory _mbill = MatchmakingBill(
-            id,
-            tailF.id,
-            tailB.id,
-            mtn,
+            lvar.id,
+            lvar.tailF.id,
+            lvar.tailB.id,
+            lvar.mtn,
             broker,
-            dealOdds,
-            dealPrice,
-            tailFOdds,
-            tailBOdds,
-            tailFCostOnBill,
-            tailBCostOnBill,
-            tailFReturnCost,
-            tailBReturnCost,
-            prize
+            lvar.dealOdds,
+            lvar.dealPrice,
+            lvar.tailFOdds,
+            lvar.tailBOdds,
+            lvar.tailFCostOnBill,
+            lvar.tailBCostOnBill,
+            lvar.tailFReturnCost,
+            lvar.tailBReturnCost,
+            lvar.prize
         );
         emit OnMatchMakingEvent(_mbill);
     }
