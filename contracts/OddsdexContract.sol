@@ -103,7 +103,17 @@ contract OddsdexContract is IOddsdexContract {
         return broker;
     }
 
-    function oddBalanceOf(address _player) public override returns (uint256) {}
+    function costOnBillOfPlayer(
+        address _player
+    ) public view override returns (uint256) {
+        StakeBill[] memory bills = stakeBills[_player];
+        uint256 total;
+        for (uint i = 0; i < bills.length; i++) {
+            StakeBill memory bill = bills[i];
+            total += bill.costs;
+        }
+        return total;
+    }
 
     function cover(uint256 _hash) public override onlyBroker mustRunning {
         require(

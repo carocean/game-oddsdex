@@ -24,7 +24,7 @@ interface IOddsdexContract {
 
     function getBroker() external returns (address);
 
-    function oddBalanceOf(address _player) external returns (uint256);
+    function costOnBillOfPlayer(address _player) external returns (uint256);
 
     function cover(uint256 _hash) external;
 
