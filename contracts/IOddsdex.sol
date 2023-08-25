@@ -8,6 +8,14 @@ interface IOddsdexContract {
 
     function getWinningDirection() external returns (CoinDirection);
 
+    function getFrontQueueCount() external returns (uint256);
+
+    function getBackQueueCount() external returns (uint256);
+
+    function getFrontBillQueue(uint index) external returns (StakeBill memory);
+
+    function getBackBillQueue(uint index) external returns (StakeBill memory);
+
     function getWeiPrice() external returns (uint256);
 
     function getBulletinBoard() external returns (BulletinBoard memory);
@@ -33,6 +41,7 @@ interface IOddsdexContract {
     function matchmake() external;
 
     function stake(
+        uint256 buyPrice,
         CoinDirection buyDirection,
         uint32 luckyNumber
     ) external payable;
@@ -64,14 +73,14 @@ enum OddsdexState {
 }
 struct BulletinBoard {
     uint256 oddunit;
-    uint256 price;
+    uint256 price;//The price is defined by multiplying the actual price by 100, which means the actual price supports two decimal places
     uint256 odds;
     uint16 kickbackRate;
     uint16 brokerageRate;
     uint16 taxRate;
 }
 struct StakeBill {
-    string id;
+    bytes32 id;
     address owner;
     uint256 odds;
     uint256 costs;
@@ -81,10 +90,10 @@ struct StakeBill {
     uint32 luckyNumber;
 }
 struct MatchmakingBill {
-    string id;
-    string refFId;
-    string refBId;
-    string mtn; //Matchmaking transaction number
+    bytes32 id;
+    bytes32 refFId;
+    bytes32 refBId;
+    bytes32 mtn; //Matchmaking transaction number
     address broker;
     uint256 dealOdds;
     uint256 dealPrice;
@@ -97,16 +106,16 @@ struct MatchmakingBill {
     uint256 prize;
 }
 struct RefundBill {
-    string id;
-    string refId;
-    string mtn; //Matchmaking transaction number
+    bytes32 id;
+    bytes32 refId;
+    bytes32 mtn; //Matchmaking transaction number
     address owner;
     uint256 costs;
 }
 struct SplitBill {
-    string id;
-    string refId;
-    string mtn; //Matchmaking transaction number
+    bytes32 id;
+    bytes32 refId;
+    bytes32 mtn; //Matchmaking transaction number
     address owner;
     uint16 kickbackRate;
     uint16 brokerageRate;

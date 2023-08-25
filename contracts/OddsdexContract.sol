@@ -22,8 +22,8 @@ contract OddsdexContract is IOddsdexContract {
         parent = msg.sender;
         root = _root;
         broker = _broker;
+        uint256 initialPrice = 100;
         uint256 oddunit = 0.0001 * (10 ** 18);
-        uint256 initialPrice = 1;
         uint16 kickbackRate = 20;
         uint16 brokerageRate = 70;
         uint16 taxRate = 100 - brokerageRate;
@@ -35,8 +35,8 @@ contract OddsdexContract is IOddsdexContract {
             brokerageRate,
             taxRate
         );
-        state=OddsdexState.matchmaked;
-        running=true;
+        state = OddsdexState.matchmaked;
+        running = true;
     }
 
     modifier onlyRoot() {
@@ -61,6 +61,36 @@ contract OddsdexContract is IOddsdexContract {
 
     function getState() public view override returns (OddsdexState) {
         return state;
+    }
+
+    function getFrontQueueCount() public view override returns (uint256) {
+        return buyFrontBillQueue.length;
+    }
+
+    function getBackQueueCount() public view override returns (uint256) {
+        return buyBackBillQueue.length;
+    }
+
+    function getFrontBillQueue(
+        uint index
+    ) public view override returns (StakeBill memory) {
+        StakeBill memory bill;
+        if (index >= buyFrontBillQueue.length) {
+            return bill;
+        }
+        bill = buyFrontBillQueue[index];
+        return bill;
+    }
+
+    function getBackBillQueue(
+        uint index
+    ) public view override returns (StakeBill memory) {
+        StakeBill memory bill;
+        if (index >= buyBackBillQueue.length) {
+            return bill;
+        }
+        bill = buyBackBillQueue[index];
+        return bill;
     }
 
     function getWinningDirection()
@@ -219,13 +249,11 @@ contract OddsdexContract is IOddsdexContract {
         uint256 tailBOdds;
         uint256 tailFCostOnBill;
         uint256 tailBCostOnBill;
-        bytes idBytes;
-        string mtn;
+        bytes32 mtn;
         uint256 prize;
         uint256 tailFRefundCost;
         uint256 tailBRefundCost;
-        bytes idNewBytes;
-        string id;
+        bytes32 idNewBytes;
     }
 
     function _matchmakePairBill() internal {
@@ -248,9 +276,10 @@ contract OddsdexContract is IOddsdexContract {
         lvar.tailFCostOnBill = lvar.tailFOdds.mul(lvar.tailF.buyPrice);
         lvar.tailBCostOnBill = lvar.tailBOdds.mul(lvar.tailB.buyPrice);
 
-        lvar.idBytes = abi.encodePacked(block.timestamp, block.difficulty);
         //mtn is Matchmaking transaction number
-        lvar.mtn = string(lvar.idBytes);
+        lvar.mtn = bytes32(
+            keccak256(abi.encodePacked(block.timestamp, block.difficulty))
+        );
 
         if (lvar.tailFOdds > 0) {
             lvar.tailF.costs = lvar.tailFCostOnBill;
@@ -283,11 +312,12 @@ contract OddsdexContract is IOddsdexContract {
         bulletinBoard.price = lvar.dealPrice;
         bulletinBoard.odds -= lvar.dealOdds;
 
-        lvar.idNewBytes = abi.encodePacked(block.timestamp, block.difficulty);
-        lvar.id = string(lvar.idNewBytes);
+        lvar.idNewBytes = bytes32(
+            keccak256(abi.encodePacked(block.timestamp, block.difficulty))
+        );
 
         MatchmakingBill memory _mbill = MatchmakingBill(
-            lvar.id,
+            lvar.idNewBytes,
             lvar.tailF.id,
             lvar.tailB.id,
             lvar.mtn,
@@ -306,7 +336,7 @@ contract OddsdexContract is IOddsdexContract {
     }
 
     function _refundCost(
-        string memory mtn,
+        bytes32 mtn,
         uint256 cost,
         StakeBill memory bill
     ) internal {
@@ -314,17 +344,21 @@ contract OddsdexContract is IOddsdexContract {
         (bool success, ) = payable(player).call{value: cost}(new bytes(0));
         require(success, "ETH_TRANSFER_FAILED");
 
-        bytes memory idBytes = abi.encodePacked(
-            block.timestamp,
-            block.difficulty
+        bytes32 idBytes = keccak256(
+            abi.encodePacked(block.timestamp, block.difficulty)
         );
-        string memory id = string(idBytes);
-        RefundBill memory _rbill = RefundBill(id, bill.id, mtn, player, cost);
+        RefundBill memory _rbill = RefundBill(
+            idBytes,
+            bill.id,
+            mtn,
+            player,
+            cost
+        );
         emit OnRefundBillEvent(_rbill);
     }
 
     function _splitPrize(
-        string memory mtn,
+        bytes32 mtn,
         uint256 prize,
         StakeBill memory bill
     ) internal {
@@ -345,13 +379,11 @@ contract OddsdexContract is IOddsdexContract {
         (bool success2, ) = payable(root).call{value: tax}(new bytes(0));
         require(success2, "ETH_TRANSFER_FAILED");
 
-        bytes memory idBytes = abi.encodePacked(
-            block.timestamp,
-            block.difficulty
+        bytes32 idBytes = keccak256(
+            abi.encodePacked(block.timestamp, block.difficulty)
         );
-        string memory id = string(idBytes);
         SplitBill memory _sbill = SplitBill(
-            id,
+            idBytes,
             bill.id,
             mtn,
             player,
@@ -380,6 +412,7 @@ contract OddsdexContract is IOddsdexContract {
     }
 
     function stake(
+        uint256 buyPrice,
         CoinDirection buyDirection,
         uint32 luckyNumber
     ) external payable override {
@@ -391,19 +424,14 @@ contract OddsdexContract is IOddsdexContract {
             state != OddsdexState.matchmaking,
             "Do not accept orders when matching"
         );
-
         uint256 odds = msg.value.div(getWeiPrice());
         require(odds >= 10, "Minimum purchase of 10 odds");
-
         bulletinBoard.odds += odds;
-
-        bytes memory idBytes = abi.encodePacked(
-            block.timestamp,
-            block.difficulty
+        bytes32 idBytes = keccak256(
+            abi.encodePacked(block.timestamp, block.difficulty)
         );
-        string memory id = string(idBytes);
         StakeBill memory bill = StakeBill(
-            id,
+            idBytes,
             msg.sender,
             odds,
             msg.value,
@@ -412,9 +440,7 @@ contract OddsdexContract is IOddsdexContract {
             gasleft(),
             luckyNumber
         );
-
         stakeBills[msg.sender].push(bill);
-
         if (buyDirection == CoinDirection.front) {
             buyFrontBillQueue.push(bill);
             _insertionSort(buyFrontBillQueue);
@@ -422,7 +448,6 @@ contract OddsdexContract is IOddsdexContract {
             buyBackBillQueue.push(bill);
             _insertionSort(buyBackBillQueue);
         } else {}
-
         emit OnStakeBillEvent(bill);
     }
 

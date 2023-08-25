@@ -47,7 +47,8 @@ body {
 }
 
 .dx-box .dx-layout .dx-left {
-    width: 350px;
+    width: 250px;
+    min-width: 250px;
     border-right: 1px solid #ececec;
     padding: 10px;
 }
@@ -68,10 +69,12 @@ body {
     list-style-type: none;
     padding: 8px 0;
 }
-.dx-box .dx-layout .dx-left .dx-panel .dx-dts[kickbackRate] li{
+
+.dx-box .dx-layout .dx-left .dx-panel .dx-dts[kickbackRate] li {
     list-style: none;
     list-style-type: none;
 }
+
 .dx-box .dx-layout .dx-left .dx-panel .dx-dts label {
     display: inline-block;
     padding-right: 10px;
@@ -108,13 +111,16 @@ body {
 .dx-box .dx-queue .dx-bill {
     margin: 0 0;
 }
-.dx-box .dx-mm-head{
+
+.dx-box .dx-mm-head {
     font-size: 14px;
     color: white;
 }
-.dx-box .dx-mm-head .dx-queue .dx-bill{
+
+.dx-box .dx-mm-head .dx-queue .dx-bill {
     background-color: black !important;
 }
+
 .dx-box .dx-queue .dx-bill:nth-child(even) {
     background-color: #f8fbea;
 }
@@ -126,37 +132,73 @@ body {
 .dx-box .dx-queue .dx-bill-obj .dx-field {
     display: inline-block;
     padding: 5px 15px;
+    vertical-align: middle;
 }
-.dx-box .dx-matchmaking .dx-diliver{
+
+.dx-box .dx-queue .dx-bill-obj .dx-field[player] {
+    width: 320px;
+    font-size: 8px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+.dx-box .dx-matchmaking .dx-diliver {
     height: 6;
 }
-.dx-box .dx-matchmaking .dx-diliver:nth-child(even){
+
+.dx-box .dx-matchmaking .dx-diliver:nth-child(even) {
     background-color: red;
 }
-.dx-box .dx-matchmaking .dx-diliver:nth-child(odd){
+
+.dx-box .dx-matchmaking .dx-diliver:nth-child(odd) {
     background-color: green;
 }
-.dx-box .dx-events{
+
+.dx-box .dx-events {
     margin: 10px 15px;
     font-size: 12px;
     color: grey;
+    /* width: 400px; */
+    /* max-width: 400px; */
+    word-wrap: break-word;
+    word-break: break-all;
 }
-.dx-box .dx-buy{
+
+.dx-box .dx-buy {
     border-top: 1px solid #ececec;
     padding-top: 30px !important;
     padding-left: 20px;
     padding-right: 20px;
     text-align: center !important;
 }
-.dx-box .dx-buy-odds{
-    margin-top: 20px;
+
+.dx-box .dx-buy-price>ul {
+    margin: 0;
+    padding: 0;
 }
-.dx-box .dx-buy-odds div{
+
+.dx-box .dx-buy-price>ul>li {
+    display: inline-block;
+    user-select: none;
+}
+.dx-box .dx-buy-price>ul>li a{
+    display: inline-block;
+    padding: 5px 15px;
+    cursor: pointer;
+    user-select: none;
+}
+.dx-box .dx-buy-price>ul>li a:hover{
+    color: blue;
+}
+
+.dx-box .dx-buy-price .dx-buy-price-input {
     position: relative;
     display: inline-block;
-    width: 300px;
+    width: 208px;
 }
-.dx-box .dx-buy-odds label{
+
+.dx-box .dx-buy-price .dx-buy-price-input label {
     position: absolute;
     display: inline-block;
     width: 70px;
@@ -169,7 +211,8 @@ body {
     font-weight: bold;
     font-size: 12px;
 }
-.dx-box .dx-buy-odds input{
+
+.dx-box .dx-buy-price .dx-buy-price-input input {
     padding-left: 7cqh !important;
     display: inline-block;
     width: 100%;
@@ -180,14 +223,57 @@ body {
     border-right: none;
     font-size: 16px;
 }
-.dx-box .dx-buy-odds input::-webkit-input-placeholder{
+
+.dx-box .dx-buy-price .dx-buy-price-input input::-webkit-input-placeholder {
     color: #c1c1c1;
 }
-.dx-box .dx-buy-odds p{
+
+.dx-box .dx-buy-odds {
+    margin-top: 20px;
+}
+
+.dx-box .dx-buy-odds div {
+    position: relative;
+    display: inline-block;
+    width: 300px;
+}
+
+.dx-box .dx-buy-odds label {
+    position: absolute;
+    display: inline-block;
+    width: 70px;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    text-align: left;
+    color: grey;
+    line-height: 30px;
+    font-weight: bold;
+    font-size: 12px;
+}
+
+.dx-box .dx-buy-odds input {
+    padding-left: 7cqh !important;
+    display: inline-block;
+    width: 100%;
+    padding: 5px;
+    border-bottom: 1px solid rgb(224, 221, 221) !important;
+    border-top: none;
+    border-left: none;
+    border-right: none;
+    font-size: 16px;
+}
+
+.dx-box .dx-buy-odds input::-webkit-input-placeholder {
+    color: #c1c1c1;
+}
+
+.dx-box .dx-buy-odds p {
     font-size: 12px;
     color: grey;
 }
-.dx-box .dx-buy-odds p span{
+
+.dx-box .dx-buy-odds p span {
     font-size: 18px;
     color: red;
     font-weight: bold;
@@ -195,12 +281,14 @@ body {
     padding-left: 10px;
     padding-right: 5px;
 }
-.dx-box .dx-buy-lucky{
+
+.dx-box .dx-buy-lucky {
     margin-top: 50px;
     margin-bottom: 50px;
     padding-top: 20px;
 }
-.dx-box .dx-buy-lucky span{
+
+.dx-box .dx-buy-lucky span {
     display: inline-block;
     color: red;
     font-size: 16px;
@@ -210,7 +298,8 @@ body {
     background-color: #ececec;
     cursor: pointer;
 }
-.dx-box .dx-buy-lucky a{
+
+.dx-box .dx-buy-lucky a {
     cursor: pointer;
     font-size: 12px;
     background-color: green;
@@ -218,26 +307,27 @@ body {
     color: white;
     border-radius: 8px;
 }
-.dx-box .dx-buy-lucky p{
+
+.dx-box .dx-buy-lucky p {
     font-size: 10px;
     color: rgb(169, 166, 166);
     width: 350px;
     margin: 20px auto;
 }
 
-.dx-box .dx-buy-sel{
+.dx-box .dx-buy-sel {
     margin-bottom: 20px;
     margin-top: 50px;
 }
-.dx-box .dx-buy-sel .dx-direction li{
+
+.dx-box .dx-buy-sel .dx-direction li {
     display: inline-block;
     padding: 20px 30px;
 }
 
-.dx-box .dx-buy-button{
-    
-}
-.dx-box .dx-buy-button a{
+.dx-box .dx-buy-button {}
+
+.dx-box .dx-buy-button a {
     display: inline-block;
     padding: 10px 100px;
     color: white;
@@ -245,4 +335,43 @@ body {
     font-size: 12px;
     border-radius: 8px;
     cursor: pointer;
+}
+
+.dx-box .dx-my-toolbar {
+    padding: 5px 0;
+    margin-top: 20px;
+}
+
+.dx-box .dx-my-toolbar ul {
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: space-between;
+}
+
+.dx-box .dx-my-toolbar ul li {
+    display: inline-block;
+}
+
+.dx-box .dx-my-toolbar ul li[label] {
+    font-weight: bold;
+    font-size: 25px;
+}
+
+.dx-box .dx-my-toolbar ul li[mybills] {
+    font-size: 14px;
+}
+
+.dx-box .dx-my-toolbar ul li[mybills] a {
+    display: inline-block;
+    margin-top: 15px;
+}
+
+.dx-box .dx-my-toolbar ul li[mybills]:hover {
+    color: blue;
+    cursor: pointer;
+}
+
+.dx-box .mask .dialog {
+    text-align: center;
 }

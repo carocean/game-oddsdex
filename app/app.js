@@ -2,9 +2,11 @@ const http = require('http');
 const jsdom = require('jsdom');
 const nReadlines = require('n-readlines');
 const $ = require('jquery');
-var rf = require("fs");
+const rf = require("fs");
 
-http.createServer(async (req, res) => {
+const port = 8081;
+
+const server = http.createServer(async (req, res) => {
   var url = req.url;
   var pos = url.lastIndexOf('?');
   var uri = url;
@@ -95,9 +97,24 @@ http.createServer(async (req, res) => {
     res.end();
     return;
   }
-}).listen(8081, () => {
+});
+
+//用于存储所有socket以广播数据
+const iolist = require('./socketio.js');
+const io = require('socket.io')(server,{
+  allowEIO3: true
+});
+io.on('connection', function (socket) {
+  // console.log(socket.id);
+  iolist[socket.id]=socket;
+  socket.on('disconnect', function () {
+    delete iolist[socket.id];
+  });
+});
+
+server.listen(port, () => {
   console.log(`Server is running on port 8081`);
-})
+});
 
 const callApi = async function (uri, req, res) {
   var fileName = '';
@@ -121,7 +138,7 @@ const callApi = async function (uri, req, res) {
   } else {
     fnWithoutExt = fileName;
   }
-  var url = '.' + path +'/'+ fnWithoutExt + '.js';
+  var url = '.' + path + '/' + fnWithoutExt + '.js';
   try {
     var api = require(url);
     res.setHeader('Content-Type', 'text/html; charset=utf-8')

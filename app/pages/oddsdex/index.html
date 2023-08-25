@@ -1,7 +1,8 @@
 <div class="dx-box">
+    <input type="hidden" id="bulletinBoard" name="bulletinBoard">
     <div class="dx-header">
         <ul>
-            <li contract><label>合约</label><span>0xiiidksdk</span></li>
+            <li contract><label>交易所</label><span>0xiiidksdk</span></li>
             <li broker><label>经纪人</label><span>0xiiidksdk</span></li>
         </ul>
     </div>
@@ -13,6 +14,18 @@
                 </li>
                 <li class="dx-dts" price>
                     <label>现价</label><span>xxx</span>odds
+                </li>
+                <li class="dx-dts" exchangeRate>
+                    <label>汇率(1odd-?eth)</label><span>xxx</span>
+                </li>
+                <li class="dx-dts" winningDirection>
+                    <label>赢方</label><span>xxx</span>
+                </li>
+                <li class="dx-dts" frontQueueCount>
+                    <label>正面队列数</label><span>xxx</span>
+                </li>
+                <li class="dx-dts" backQueueCount>
+                    <label>背面队列数</label><span>xxx</span>
                 </li>
                 <li class="dx-dts" kickbackRate>
                     <label>手续费率</label><span>xxx</span>
@@ -50,16 +63,16 @@
                     <ul class="dx-queue">
                         <li class="dx-bill">
                             <ul class="dx-bill-obj">
-                                <li class="dx-field">2.35</li>
-                                <li class="dx-field">16</li>
-                                <li class="dx-field">0xiiiddds</li>
+                                <li class="dx-field" buyPrice>2.35</li>
+                                <li class="dx-field" odds>16</li>
+                                <li class="dx-field" player>0xiiiddds</li>
                             </ul>
                         </li>
                         <li class="dx-bill">
                             <ul class="dx-bill-obj">
-                                <li class="dx-field">2.35</li>
-                                <li class="dx-field">16</li>
-                                <li class="dx-field">0xiiiddds</li>
+                                <li class="dx-field" buyPrice>2.35</li>
+                                <li class="dx-field" odds>16</li>
+                                <li class="dx-field" player>0xiiiddds</li>
                             </ul>
                         </li>
                     </ul>
@@ -70,36 +83,49 @@
                     <ul class="dx-queue">
                         <li class="dx-bill">
                             <ul class="dx-bill-obj">
-                                <li class="dx-field">2.35</li>
-                                <li class="dx-field">16</li>
-                                <li class="dx-field">0xiiiddds</li>
+                                <li class="dx-field" buyPrice>2.35</li>
+                                <li class="dx-field" odds>16</li>
+                                <li class="dx-field" player>0xiiiddds</li>
                             </ul>
                         </li>
                         <li class="dx-bill">
                             <ul class="dx-bill-obj">
-                                <li class="dx-field">2.35</li>
-                                <li class="dx-field">16</li>
-                                <li class="dx-field">0xiiiddds</li>
+                                <li class="dx-field" buyPrice>2.35</li>
+                                <li class="dx-field" odds>16</li>
+                                <li class="dx-field" player>0xiiiddds</li>
                             </ul>
                         </li>
                     </ul>
                 </li>
             </ul>
             <div class="dx-events">事件区</div>
+            <div class="dx-my-toolbar">
+                <ul>
+                    <li label>个人区</li>
+                    <li mybills><a>我的订单</a></li>
+                </ul>
+            </div>
             <ul class="dx-buy">
-                <li class="dx-buy-odds">
-                    <div><label>odds(个)：</label><input placeholder="输入你想认购的odds数量..."></div>
-                    <p>您需要支付<span>5</span>ETH</p>
+                <li class="dx-buy-price">
+                    <ul>
+                        <li price><div class="dx-buy-price-input"><label>价格：</label><input placeholder="输入你想认购的价格..." price></div></li>
+                        <li up><a>+</a></li>
+                        <li down><a>-</a></li>
+                    </ul>
                 </li>
-                <li class="dx-buy-lucky"><span title="单击可自定义">8823823</span><a>随机生成</a>
+                <li class="dx-buy-odds">
+                    <div><label>odds(个)：</label><input placeholder="输入你想认购的odds数量..." odds></div>
+                    <p>您需要支付<span funds>0</span>ETH</p>
+                </li>
+                <li class="dx-buy-lucky"><span title="单击可自定义" number>8823823</span><a gen>随机生成</a>
                     <p>交易所将根据所有玩家的幸运数字计算出哪面赢，算法公平开放且进行不可逆加密运算，保证任何人均无法操控输赢的结果，也无法从结果倒推到幸运数字。玩家可在交易后使用开放算法去校验。</p>
                 </li>
                 <li class="dx-buy-sel">
                     <ul class="dx-direction">
-                        <li><input type="radio" id="frontDirection" name="direction" value="0" checked />
+                        <li><input type="radio" id="frontDirection" name="direction" value="1" checked />
                             <label for="frontDirection">正面赢</label>
                         </li>
-                        <li><input type="radio" id="backDirection" name="direction" value="1" />
+                        <li><input type="radio" id="backDirection" name="direction" value="2" />
                             <label for="backDirection">背面赢</label>
                         </li>
                     </ul>
@@ -108,11 +134,27 @@
             </ul>
         </div>
     </div>
+    <div class="mask" style="display: none;">
+        <div class="dialog">
+            <p amount>你需支付注金<span>2.34</span>ETH</p>
+            <select accounts>
+                <option>选择付款账户</option>
+            </select>
+            <ul ops>
+                <li yes><a>确认支付</a></li>
+                <li no><a>取消支付</a></li>
+            </ul>
+            <p tips><span></span></p>
+        </div>
+    </div>
 </div>
 
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jquery.json-viewer@1.5.0/json-viewer/jquery.json-viewer.min.css">
 <link href="/css/oddsdex.css" rel="stylesheet">
+<link href="/css/dialog.css" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/web3/4.0.1-alpha.5/web3.min.js"
     integrity="sha512-NfffVWpEqu1nq+658gzlJQilRBOvjs+PhEKSjT9gkQXRy9OfxI2TOXr33zS7MgGyTpBa5qtC6mKJkQGd9dN/rw=="
     crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-<script src="/js/oddsdex.js">
-</script>
+<script src="https://cdn.jsdelivr.net/npm/jquery.json-viewer@1.5.0/json-viewer/jquery.json-viewer.min.js"></script>
+<script src="/js/socket.io.js"></script>
+<script src="/js/oddsdex.js"></script>
