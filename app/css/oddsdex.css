@@ -75,6 +75,12 @@ body {
     list-style-type: none;
 }
 
+.dx-box .dx-layout .dx-left .dx-panel .dx-dts[coverHash] {
+    word-break: break-all;
+    word-wrap: break-word;
+    text-align: left;
+}
+
 .dx-box .dx-layout .dx-left .dx-panel .dx-dts label {
     display: inline-block;
     padding-right: 10px;
@@ -88,10 +94,12 @@ body {
     display: inline-block;
     padding-right: 5px;
 }
-.dx-box .dx-layout .dx-left .dx-panel .dx-dts .dx-dls{
+
+.dx-box .dx-layout .dx-left .dx-panel .dx-dts .dx-dls {
     list-style: none;
     list-style-type: none;
 }
+
 .dx-box .dx-right ul {
     padding: 0;
     margin: 0;
@@ -138,21 +146,25 @@ body {
     vertical-align: middle;
     text-align: left;
 }
-.dx-box .dx-queue .dx-bill-obj .dx-field[buyPrice]{
+
+.dx-box .dx-queue .dx-bill-obj .dx-field[buyPrice] {
     width: 50px;
     padding-left: 5px;
     padding-right: 5px;
 }
-.dx-box .dx-queue .dx-bill-obj .dx-field[odds]{
+
+.dx-box .dx-queue .dx-bill-obj .dx-field[odds] {
     width: 110px;
     padding-left: 5px;
     padding-right: 5px;
 }
-.dx-box .dx-queue .dx-bill-obj .dx-field[costs]{
+
+.dx-box .dx-queue .dx-bill-obj .dx-field[costs] {
     width: 90px;
     padding-left: 5px;
     padding-right: 5px;
 }
+
 .dx-box .dx-queue .dx-bill-obj .dx-field[player] {
     width: 240px;
     font-size: 8px;
@@ -202,13 +214,15 @@ body {
     display: inline-block;
     user-select: none;
 }
-.dx-box .dx-buy-price>ul>li a{
+
+.dx-box .dx-buy-price>ul>li a {
     display: inline-block;
     padding: 5px 15px;
     cursor: pointer;
     user-select: none;
 }
-.dx-box .dx-buy-price>ul>li a:hover{
+
+.dx-box .dx-buy-price>ul>li a:hover {
     color: blue;
 }
 

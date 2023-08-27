@@ -18,6 +18,38 @@ $(document).ready(async function () {
                 debugger;
                 refreshDealPanel();
             })
+            socket.on('OnLotteryEvent', function (msg) {
+                var obj = JSON.parse(msg);
+                // var d = JSON.stringify(obj, null, "<br>");
+                $('.dx-events').jsonViewer(obj);
+                refreshDetails();
+                debugger;
+                refreshDealPanel();
+            })
+            socket.on('OnMatchMakingEvent', function (msg) {
+                var obj = JSON.parse(msg);
+                // var d = JSON.stringify(obj, null, "<br>");
+                $('.dx-events').jsonViewer(obj);
+                refreshDetails();
+                debugger;
+                refreshDealPanel();
+            })
+            socket.on('OnRefundBillEvent', function (msg) {
+                var obj = JSON.parse(msg);
+                // var d = JSON.stringify(obj, null, "<br>");
+                $('.dx-events').jsonViewer(obj);
+                refreshDetails();
+                debugger;
+                refreshDealPanel();
+            })
+            socket.on('OnSplitBillEvent', function (msg) {
+                var obj = JSON.parse(msg);
+                // var d = JSON.stringify(obj, null, "<br>");
+                $('.dx-events').jsonViewer(obj);
+                refreshDetails();
+                debugger;
+                refreshDealPanel();
+            })
             $('.dx-events').html('事件接收区已准备好');
         });
     })();
@@ -38,9 +70,9 @@ $(document).ready(async function () {
             for (var i = 0; i < list.length; i++) {
                 var bill = list[i];
                 var e = fBillE.clone();
-                e.find('.dx-field[buyPrice]').html((bill.buyPrice/100.00).toFixed(2));
+                e.find('.dx-field[buyPrice]').html((bill.buyPrice / 100.00).toFixed(2));
                 e.find('.dx-field[odds]').html(bill.odds);
-                e.find('.dx-field[costs]').html(parseFloat(web3.utils.fromWei(bill.costs,'ether')).toFixed(6));
+                e.find('.dx-field[costs]').html(parseFloat(web3.utils.fromWei(bill.costs, 'ether')).toFixed(6));
                 e.find('.dx-field[player]').html(bill.player);
                 fQueueE.append(e);
             }
@@ -54,9 +86,9 @@ $(document).ready(async function () {
             for (var i = 0; i < list.length; i++) {
                 var bill = list[i];
                 var e = bBillE.clone();
-                e.find('.dx-field[buyPrice]').html((bill.buyPrice/100.00).toFixed(2));
+                e.find('.dx-field[buyPrice]').html((bill.buyPrice / 100.00).toFixed(2));
                 e.find('.dx-field[odds]').html(bill.odds);
-                e.find('.dx-field[costs]').html(parseFloat(web3.utils.fromWei(bill.costs,'ether')).toFixed(6));
+                e.find('.dx-field[costs]').html(parseFloat(web3.utils.fromWei(bill.costs, 'ether')).toFixed(6));
                 e.find('.dx-field[player]').html(bill.player);
                 bQueueE.append(e);
             }
@@ -109,6 +141,8 @@ $(document).ready(async function () {
             var panel = $('.dx-panel');
             panel.find('.dx-dts[state] span').html(state);
             panel.find('.dx-dts[winningDirection] span').html(winningDirection);
+            panel.find('.dx-dts[canMatchmaking] span').html(obj.canMatchmaking ? '是' : '否');
+            panel.find('.dx-dts[coverHash] span').html(obj.coverHash);
             panel.find('.dx-dts[frontQueueCount] span').html(obj.frontQueueCount);
             panel.find('.dx-dts[backQueueCount] span').html(obj.backQueueCount);
             panel.find('.dx-dts[queueCount] span').html(obj.queueCount);
@@ -118,7 +152,7 @@ $(document).ready(async function () {
             panel.find('.dx-dts[kickbackRate]>span').html(obj.bulletinBoard.kickbackRate / 100);
             panel.find('.dx-dts[kickbackRate] li[brokerageRate] span').html(obj.bulletinBoard.brokerageRate / 100);
             panel.find('.dx-dts[kickbackRate] li[taxRate] span').html(obj.bulletinBoard.taxRate / 100);
-            panel.find('.dx-dts[total] li[funds] span').html(web3.utils.fromWei(obj.bulletinBoard.funds,'ether'));
+            panel.find('.dx-dts[total] li[funds] span').html(web3.utils.fromWei(obj.bulletinBoard.funds, 'ether'));
             panel.find('.dx-dts[total] li[odds] span').html(obj.bulletinBoard.odds);
             $('#bulletinBoard').val(JSON.stringify(obj.bulletinBoard));
         })
@@ -260,7 +294,7 @@ $(document).ready(async function () {
 
         var json = $('#bulletinBoard').val();
         var bulletinBoard = JSON.parse(json);
-        var payableWei = parseInt(oddsV) * parseInt(parseFloat(buyPriceV)*100) * bulletinBoard.oddunit;
+        var payableWei = parseInt(oddsV) * parseInt(parseFloat(buyPriceV) * 100) * bulletinBoard.oddunit;
         // var paymethod = 'stake(CoinDirection,uint32)';
         var paymethod = web3.eth.abi.encodeFunctionCall({
             name: 'stake',

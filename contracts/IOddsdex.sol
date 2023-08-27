@@ -12,6 +12,10 @@ interface IOddsdexContract {
 
     function getBulletinBoard() external returns (BulletinBoard memory);
 
+    function getCoverHash() external returns (uint256 coverHash);
+
+    function genHash(uint256 number) external returns (uint256);
+
     function isRunning() external returns (bool);
 
     function stop() external;
@@ -49,6 +53,14 @@ interface IOddsdexContract {
         returns (uint32 length, StakeBill[5] memory bills);
 
     function cover(uint256 _hash) external;
+
+    function lotteryDraw(
+        uint256 _luckyNumber
+    ) external returns (CoinDirection direction);
+
+    function canMatchmaking() external returns (bool matched);
+
+    function matchmake() external;
 
     function stake(
         uint256 buyPrice,

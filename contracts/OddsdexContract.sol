@@ -15,7 +15,7 @@ contract OddsdexContract is IOddsdexContract {
     uint256 private coverHash;
     CoinDirection private winningDirection;
     StakeBill[8 * 32] private stakeBills;
-    uint8[32] stakeBillsBitmap;
+    uint8[32] private stakeBillsBitmap;
 
     // StakeBill[10] private buyFrontBillQueue;
     // StakeBill[10] private buyBackBillQueue;
@@ -56,10 +56,19 @@ contract OddsdexContract is IOddsdexContract {
         _;
     }
     modifier checkLuckyNumberByBrokerHash(uint256 luckyNumber) {
-        bytes32 packed = keccak256(abi.encodePacked(luckyNumber));
-        uint256 _hash = uint256(packed);
+        uint256 _hash = genHash(luckyNumber);
         require(_hash == coverHash, "LuckyNumber verification failed");
         _;
+    }
+
+    function genHash(uint256 number) public pure override returns (uint256) {
+        bytes32 packed = keccak256(abi.encodePacked(number));
+        uint256 _hash = uint256(packed);
+        return _hash;
+    }
+
+    function getCoverHash() public view override returns (uint256) {
+        return coverHash;
     }
 
     function getState() public view override returns (OddsdexState) {
@@ -176,6 +185,282 @@ contract OddsdexContract is IOddsdexContract {
         }
         StakeBill memory ret;
         return (false, ret);
+    }
+
+    function lotteryDraw(
+        uint256 _luckyNumber
+    )
+        public
+        override
+        onlyBroker
+        mustRunning
+        checkLuckyNumberByBrokerHash(_luckyNumber)
+        returns (CoinDirection direction)
+    {
+        require(
+            state == OddsdexState.covering,
+            "Must have covering before calling"
+        );
+        state = OddsdexState.lottering;
+        winningDirection = _calculateWinningDirection(_luckyNumber);
+        state = OddsdexState.lottered;
+
+        LotteryMessage memory message = LotteryMessage(
+            winningDirection,
+            _luckyNumber,
+            broker,
+            coverHash
+        );
+
+        emit OnLotteryEvent(message);
+
+        return winningDirection;
+    }
+
+    function _calculateWinningDirection(
+        uint256 _luckyNumber
+    ) internal view returns (CoinDirection) {
+        uint total = _luckyNumber;
+        uint32 length = _lengthOfStakeBills(true, CoinDirection.unknown);
+        for (uint32 i = 0; i < length; i++) {
+            (bool exists, StakeBill memory bill) = getStakeBill(i);
+            uint32 luckyNumberOfPlayer = exists ? bill.luckyNumber : 0;
+            total += luckyNumberOfPlayer;
+        }
+        uint v = total % 2;
+        if (v == 1) {
+            return CoinDirection.front;
+        } else {
+            return CoinDirection.back;
+        }
+    }
+
+    function canMatchmaking() public view override returns (bool matched) {
+        if (state != OddsdexState.lottered) {
+            return false;
+        }
+        (uint32 bitIndexAtF, StakeBill memory tailF) = _topFirstOfStakeBill(
+            CoinDirection.front
+        );
+        if (bitIndexAtF == 0xFFFFFFFF) {
+            return false;
+        }
+        (uint32 bitIndexAtB, StakeBill memory tailB) = _topFirstOfStakeBill(
+            CoinDirection.back
+        );
+        if (bitIndexAtB == 0xFFFFFFFF) {
+            return false;
+        }
+        if (winningDirection == CoinDirection.front) {
+            return tailF.buyPrice <= tailB.buyPrice;
+        } else if (winningDirection == CoinDirection.back) {
+            return tailB.buyPrice <= tailF.buyPrice;
+        } else {
+            return false;
+        }
+    }
+
+    function matchmake() public override onlyBroker {
+        require(
+            state == OddsdexState.lottered,
+            "Must have lottered before calling"
+        );
+        state = OddsdexState.matchmaking;
+        while (canMatchmaking()) {
+            _matchmakePairBill();
+        }
+        coverHash = 0x0;
+        state = OddsdexState.matchmaked;
+    }
+
+    struct LocalVar {
+        uint256 dealOdds;
+        uint256 dealPrice;
+        uint256 tailFOdds;
+        uint256 tailBOdds;
+        uint256 tailFCostOnBill;
+        uint256 tailBCostOnBill;
+        bytes32 mtn;
+        uint256 prize;
+        uint256 tailFRefundCost;
+        uint256 tailBRefundCost;
+        bytes32 matchmakingBillId;
+    }
+
+    function _matchmakePairBill() internal {
+        //撮合一次对单之后，吃不掉的再次放入队列中，因此等下轮撮合，所以只考虑撮合当前对单即可
+        (uint32 bitIndexAtF, StakeBill memory tailF) = _topFirstOfStakeBill(
+            CoinDirection.front
+        );
+        if (bitIndexAtF == 0xFFFFFFFF) {
+            return;
+        }
+        (uint32 bitIndexAtB, StakeBill memory tailB) = _topFirstOfStakeBill(
+            CoinDirection.back
+        );
+        if (bitIndexAtB == 0xFFFFFFFF) {
+            return;
+        }
+        //将两单移除，如果有剩余再放到队列
+        _removeStakeBill(bitIndexAtF);
+        _removeStakeBill(bitIndexAtB);
+
+        LocalVar memory lvar;
+        //撮合成交
+        lvar.dealOdds = _min(tailF.odds, tailB.odds);
+        lvar.dealPrice = (tailF.buyPrice.add(tailB.buyPrice)).div(2);
+        lvar.tailFOdds = tailF.odds.sub(lvar.dealOdds);
+        lvar.tailBOdds = tailB.odds.sub(lvar.dealOdds);
+        lvar.tailFCostOnBill = lvar
+            .tailFOdds
+            .mul(tailF.buyPrice)
+            .mul(bulletinBoard.oddunit)
+            .div(100);
+        lvar.tailBCostOnBill = lvar
+            .tailBOdds
+            .mul(tailB.buyPrice)
+            .mul(bulletinBoard.oddunit)
+            .div(100);
+
+        //如果有剩余则存回
+        if (lvar.tailFOdds > 0) {
+            tailF.costs = lvar.tailFCostOnBill;
+            tailF.odds = lvar.tailFOdds;
+            storeStakeBill(tailF);
+        }
+        if (lvar.tailBOdds > 0) {
+            tailB.costs = lvar.tailBCostOnBill;
+            tailB.odds = lvar.tailBOdds;
+            storeStakeBill(tailB);
+        }
+
+        lvar.prize = lvar
+            .dealOdds
+            .mul(lvar.dealPrice)
+            .mul(bulletinBoard.oddunit)
+            .div(100);
+        lvar.tailFRefundCost = tailF
+            .odds
+            .mul(tailF.buyPrice)
+            .mul(bulletinBoard.oddunit)
+            .div(100)
+            .sub(lvar.tailFCostOnBill);
+        lvar.tailBRefundCost = tailB
+            .odds
+            .mul(tailB.buyPrice)
+            .mul(bulletinBoard.oddunit)
+            .div(100)
+            .sub(lvar.tailBCostOnBill);
+
+        //mtn is Matchmaking transaction number
+        lvar.mtn = bytes32(
+            keccak256(abi.encodePacked(block.timestamp, block.difficulty))
+        );
+
+        _refundCost(lvar.mtn, lvar.tailFRefundCost, tailF);
+        _refundCost(lvar.mtn, lvar.tailBRefundCost, tailB);
+
+        if (winningDirection == CoinDirection.front) {
+            _splitPrize(lvar.mtn, lvar.prize, tailF);
+        } else if (winningDirection == CoinDirection.back) {
+            _splitPrize(lvar.mtn, lvar.prize, tailB);
+        } else {}
+
+        bulletinBoard.price = lvar.dealPrice;
+        bulletinBoard.odds -= lvar.dealOdds;
+
+        lvar.matchmakingBillId = bytes32(
+            keccak256(abi.encodePacked(block.timestamp, block.difficulty))
+        );
+
+        MatchmakingBill memory _mbill = MatchmakingBill(
+            lvar.matchmakingBillId,
+            tailF.id,
+            tailB.id,
+            lvar.mtn,
+            broker,
+            lvar.dealOdds,
+            lvar.dealPrice,
+            lvar.tailFOdds,
+            lvar.tailBOdds,
+            lvar.tailFCostOnBill,
+            lvar.tailBCostOnBill,
+            lvar.tailFRefundCost,
+            lvar.tailBRefundCost,
+            lvar.prize
+        );
+        emit OnMatchMakingEvent(_mbill);
+    }
+
+    function _refundCost(
+        bytes32 mtn,
+        uint256 costs,
+        StakeBill memory bill
+    ) internal {
+        if (costs == 0) {
+            return;
+        }
+        address player = bill.owner;
+        (bool success, ) = payable(player).call{value: costs}(new bytes(0));
+        require(success, "ETH_TRANSFER_FAILED");
+
+        bytes32 idBytes = keccak256(
+            abi.encodePacked(block.timestamp, block.difficulty)
+        );
+        RefundBill memory _rbill = RefundBill(
+            idBytes,
+            bill.id,
+            mtn,
+            player,
+            costs
+        );
+        emit OnRefundBillEvent(_rbill);
+    }
+
+    function _splitPrize(
+        bytes32 mtn,
+        uint256 prize,
+        StakeBill memory bill
+    ) internal {
+        address player = bill.owner;
+        uint256 kickback = prize.mul(bulletinBoard.kickbackRate).div(100);
+        uint256 bonusOfPlayer = prize.sub(kickback);
+        uint256 brokerage = kickback.mul(bulletinBoard.brokerageRate).div(100);
+        uint256 tax = kickback.sub(brokerage);
+
+        (bool success, ) = payable(player).call{value: bonusOfPlayer}(
+            new bytes(0)
+        );
+        require(success, "ETH_TRANSFER_FAILED");
+        (bool success1, ) = payable(broker).call{value: brokerage}(
+            new bytes(0)
+        );
+        require(success1, "ETH_TRANSFER_FAILED");
+        (bool success2, ) = payable(root).call{value: tax}(new bytes(0));
+        require(success2, "ETH_TRANSFER_FAILED");
+
+        bytes32 idBytes = keccak256(
+            abi.encodePacked(block.timestamp, block.difficulty)
+        );
+        SplitBill memory _sbill = SplitBill(
+            idBytes,
+            bill.id,
+            mtn,
+            player,
+            bulletinBoard.kickbackRate,
+            bulletinBoard.brokerageRate,
+            bulletinBoard.taxRate,
+            prize,
+            bonusOfPlayer,
+            kickback,
+            brokerage,
+            tax
+        );
+        emit OnSplitBillEvent(_sbill);
+    }
+
+    function _min(uint256 a, uint256 b) internal pure returns (uint256) {
+        return a <= b ? a : b;
     }
 
     function cover(uint256 _hash) public override onlyBroker mustRunning {
