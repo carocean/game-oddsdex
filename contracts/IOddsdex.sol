@@ -8,19 +8,9 @@ interface IOddsdexContract {
 
     function getWinningDirection() external returns (CoinDirection);
 
-    function getFrontQueueCount() external returns (uint256);
-
-    function getBackQueueCount() external returns (uint256);
-
-    function getFrontBillQueue(uint index) external returns (StakeBill memory);
-
-    function getBackBillQueue(uint index) external returns (StakeBill memory);
-
     function getWeiPrice() external returns (uint256);
 
     function getBulletinBoard() external returns (BulletinBoard memory);
-
-    function canMatchmaking() external returns (bool);
 
     function isRunning() external returns (bool);
 
@@ -32,13 +22,33 @@ interface IOddsdexContract {
 
     function getBroker() external returns (address);
 
-    function costOnBillOfPlayer(address _player) external returns (uint256);
+    function getStakeBill(
+        uint32 index
+    ) external returns (bool exists, StakeBill memory bill);
+
+    function getQueueCount() external returns (uint256);
+
+    function getFrontQueueCount() external returns (uint256);
+
+    function getBackQueueCount() external returns (uint256);
+
+    function getFirstBillOfFrontQueue()
+        external
+        returns (uint32 bitIndexAt, StakeBill memory bill);
+
+    function getFirstBillOfBackQueue()
+        external
+        returns (uint32 bitIndexAt, StakeBill memory bill);
+
+    function getTopFiveBillFrontQueue()
+        external
+        returns (uint32 length, StakeBill[5] memory bills);
+
+    function getTopFiveBillBackQueue()
+        external
+        returns (uint32 length, StakeBill[5] memory bills);
 
     function cover(uint256 _hash) external;
-
-    function lottery(uint256 _luckyNumber) external returns (CoinDirection);
-
-    function matchmake() external;
 
     function stake(
         uint256 buyPrice,
@@ -73,8 +83,9 @@ enum OddsdexState {
 }
 struct BulletinBoard {
     uint256 oddunit;
-    uint256 price;//The price is defined by multiplying the actual price by 100, which means the actual price supports two decimal places
+    uint256 price; //The price is defined by multiplying the actual price by 100, which means the actual price supports two decimal places
     uint256 odds;
+    uint256 funds;
     uint16 kickbackRate;
     uint16 brokerageRate;
     uint16 taxRate;
@@ -85,6 +96,7 @@ struct StakeBill {
     uint256 odds;
     uint256 costs;
     uint256 buyPrice;
+    uint256 marketPrice;
     CoinDirection buyDirection;
     uint256 gas;
     uint32 luckyNumber;

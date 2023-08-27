@@ -15,6 +15,7 @@ $(document).ready(async function () {
                 // var d = JSON.stringify(obj, null, "<br>");
                 $('.dx-events').jsonViewer(obj);
                 refreshDetails();
+                debugger;
                 refreshDealPanel();
             })
             $('.dx-events').html('事件接收区已准备好');
@@ -37,8 +38,9 @@ $(document).ready(async function () {
             for (var i = 0; i < list.length; i++) {
                 var bill = list[i];
                 var e = fBillE.clone();
-                e.find('.dx-field[buyPrice]').html(bill.buyPrice);
+                e.find('.dx-field[buyPrice]').html((bill.buyPrice/100.00).toFixed(2));
                 e.find('.dx-field[odds]').html(bill.odds);
+                e.find('.dx-field[costs]').html(parseFloat(web3.utils.fromWei(bill.costs,'ether')).toFixed(6));
                 e.find('.dx-field[player]').html(bill.player);
                 fQueueE.append(e);
             }
@@ -52,8 +54,9 @@ $(document).ready(async function () {
             for (var i = 0; i < list.length; i++) {
                 var bill = list[i];
                 var e = bBillE.clone();
-                e.find('.dx-field[buyPrice]').html(bill.buyPrice);
+                e.find('.dx-field[buyPrice]').html((bill.buyPrice/100.00).toFixed(2));
                 e.find('.dx-field[odds]').html(bill.odds);
+                e.find('.dx-field[costs]').html(parseFloat(web3.utils.fromWei(bill.costs,'ether')).toFixed(6));
                 e.find('.dx-field[player]').html(bill.player);
                 bQueueE.append(e);
             }
@@ -101,45 +104,52 @@ $(document).ready(async function () {
                     winningDirection = '背面赢';
                     break;
             }
-            var price = (obj.bulletinBoard.price * 1.00).toFixed(2);
+            var price = (obj.bulletinBoard.price / 100.00).toFixed(2);
             $('.dx-buy-price li[price] input[price]').val(price);
             var panel = $('.dx-panel');
             panel.find('.dx-dts[state] span').html(state);
             panel.find('.dx-dts[winningDirection] span').html(winningDirection);
             panel.find('.dx-dts[frontQueueCount] span').html(obj.frontQueueCount);
             panel.find('.dx-dts[backQueueCount] span').html(obj.backQueueCount);
+            panel.find('.dx-dts[queueCount] span').html(obj.queueCount);
             panel.find('.dx-dts[isRunning] span').html(obj.isRunning == true ? '正在运行' : '停止');
             panel.find('.dx-dts[price] span').html(price);
-            panel.find('.dx-dts[exchangeRate] span').html(obj.exchangeRate + '');
+            panel.find('.dx-dts[exchangeRate] span').html(obj.exchangeRate);
             panel.find('.dx-dts[kickbackRate]>span').html(obj.bulletinBoard.kickbackRate / 100);
             panel.find('.dx-dts[kickbackRate] li[brokerageRate] span').html(obj.bulletinBoard.brokerageRate / 100);
             panel.find('.dx-dts[kickbackRate] li[taxRate] span').html(obj.bulletinBoard.taxRate / 100);
-
+            panel.find('.dx-dts[total] li[funds] span').html(web3.utils.fromWei(obj.bulletinBoard.funds,'ether'));
+            panel.find('.dx-dts[total] li[odds] span').html(obj.bulletinBoard.odds);
             $('#bulletinBoard').val(JSON.stringify(obj.bulletinBoard));
         })
     }
     refreshDetails();
     $('.dx-buy-price li[up] a').click(function () {
-        var e=$('.dx-buy-price li[price] input[price]');
+        var e = $('.dx-buy-price li[price] input[price]');
         var priceStr = e.val();
-        if(priceStr==''){
+        if (priceStr == '') {
             alert('价格为空');
             return;
         }
-        var price=parseFloat(priceStr);
-        price=price+0.01;
+        var price = parseFloat(priceStr);
+        price = price + 0.02;
         e.val(price.toFixed(2));
+        refreshPayment();
     })
     $('.dx-buy-price li[down] a').click(function () {
-        var e=$('.dx-buy-price li[price] input[price]');
+        var e = $('.dx-buy-price li[price] input[price]');
         var priceStr = e.val();
-        if(priceStr==''){
+        if (priceStr == '') {
             alert('价格为空');
             return;
         }
-        var price=parseFloat(priceStr);
-        price-=0.01;
+        var price = parseFloat(priceStr);
+        price -= 0.02;
         e.val(price.toFixed(2));
+        refreshPayment();
+    })
+    $('.dx-buy-price li[price] input[price]').change(function () {
+        refreshPayment();
     })
     $('.dx-box .dx-buy-lucky>a[gen]').click(function () {
         var v1 = Math.floor(Math.random() * 9);
@@ -171,33 +181,45 @@ $(document).ready(async function () {
     })
 
     $('.dx-box .dx-buy-odds input[odds]').change(function () {
-        var intval = parseInt($(this).val());
-        if (intval < 10) {
+        refreshPayment();
+    });
+    function refreshPayment() {
+        var odds = parseInt($('.dx-box .dx-buy-odds input[odds]').val());
+        if (odds < 10) {
             alert('至少要买一手，一手为10个odds');
             $(this).val('10');
             $(this).trigger('change');
             return;
         }
+        var inputPriceStr = $('.dx-buy-price-input input[price]').val();
+        if (inputPriceStr == '') {
+            return;
+        }
         var json = $('#bulletinBoard').val();
         var bulletinBoard = JSON.parse(json);
-        var eth = (intval * bulletinBoard.price * web3.utils.fromWei(bulletinBoard.oddunit, 'ether')).toFixed(4);
-        $('.dx-box .dx-buy-odds span[funds]').html(eth + '');
-    });
+        var wei = odds * (parseFloat(inputPriceStr) * 100) * bulletinBoard.oddunit;
+        var eth = web3.utils.fromWei(wei, 'ether');
+        var v = parseFloat(eth).toFixed(6);
+        $('.dx-box .dx-buy-odds span[funds]').html(v);
+    }
     $('.dx-box .dx-buy-button a').click(async function () {
         var oddsV = $('.dx-box .dx-buy-odds input[odds]').val();
         if (oddsV == '') {
             alert('请输入购买odds的数量');
             return;
         }
-        var luckyNumberV = $('.dx-box .dx-buy-lucky span[number]').attr('number');
-        var directionV = $('.dx-box .dx-buy-sel .dx-direction input[name="direction"]:checked').val();
-        // alert(oddsV + ' ' + luckyNumberV + ' ' + directionV);
+        var buyPriceV = $('.dx-box .dx-buy-price input[price]').val();
+        if (buyPriceV == '') {
+            return;
+        }
 
         var json = $('#bulletinBoard').val();
         var bulletinBoard = JSON.parse(json);
 
-        var payableWei = parseInt(oddsV) * bulletinBoard.price * bulletinBoard.oddunit;
-        $('.mask .dialog p[amount] span').html(parseFloat(web3.utils.fromWei(payableWei, 'ether')).toFixed(4));
+        var payableWei = parseInt(oddsV) * (parseFloat(buyPriceV) * 100) * bulletinBoard.oddunit;
+        var payableEth = parseFloat(web3.utils.fromWei(payableWei, 'ether')).toFixed(6);
+        $('.mask .dialog p[amount] span').html(payableEth);
+        $('.mask .dialog p[amount]').attr('amount', payableEth);
         const accounts = await web3.eth.requestAccounts();
         var selectE = $('.mask .dialog select');
         selectE.empty();
@@ -223,6 +245,10 @@ $(document).ready(async function () {
             alert('没有选择账号');
             return;
         }
+        var buyPriceV = $('.dx-box .dx-buy-price input[price]').val();
+        if (buyPriceV == '') {
+            return;
+        }
         // alert(selectAccount+' '+oddsV + ' ' + luckyNumberV + ' ' + directionV);
 
         var params = new URLSearchParams(window.location.search)
@@ -234,20 +260,22 @@ $(document).ready(async function () {
 
         var json = $('#bulletinBoard').val();
         var bulletinBoard = JSON.parse(json);
-        var payableWei = parseInt(oddsV) * bulletinBoard.price * bulletinBoard.oddunit;
-
+        var payableWei = parseInt(oddsV) * parseInt(parseFloat(buyPriceV)*100) * bulletinBoard.oddunit;
         // var paymethod = 'stake(CoinDirection,uint32)';
         var paymethod = web3.eth.abi.encodeFunctionCall({
             name: 'stake',
             type: 'function',
             inputs: [{
+                type: 'uint256',
+                name: 'buyPrice'
+            }, {
                 type: 'uint8',
                 name: 'buyDirection'
             }, {
                 type: 'uint32',
                 name: 'luckyNumber'
             }]
-        }, [parseInt(directionV), parseInt(luckyNumberV)]);
+        }, [parseInt(parseFloat(buyPriceV) * 100), parseInt(directionV), parseInt(luckyNumberV)]);
 
         const transaction = {
             from: selectAccount,

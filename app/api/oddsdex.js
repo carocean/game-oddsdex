@@ -50,7 +50,10 @@ const OnStakeBillEvent = function (error, msg) {
             }, {
                 type: 'uint256',
                 name: 'buyPrice'
-            }, , {
+            }, {
+                type: 'uint256',
+                name: 'marketPrice'
+            }, {
                 type: 'uint8',
                 name: 'buyDirection'
             }, {
@@ -104,26 +107,30 @@ module.exports.details = async function (req, res) {
     var isRunning = await instance.isRunning();
     var winningDirection = await instance.getWinningDirection();
     var bulletinBoard = await instance.getBulletinBoard();
-    var canMatchmaking = await instance.canMatchmaking({ from: broker });
+    // var canMatchmaking = await instance.canMatchmaking({ from: broker });
     var winningDirection = await instance.getWinningDirection();
+    var queueCount = await instance.getQueueCount();
     var frontQueueCount = await instance.getFrontQueueCount();
     var backQueueCount = await instance.getBackQueueCount();
+    var exchangeRate = web3.utils.fromWei((parseInt(bulletinBoard.oddunit) * parseInt(bulletinBoard.price)) + '', 'ether');
     var map = {
         root: root,
         state: parseInt(state),
         isRunning: isRunning,
         winningDirection: parseInt(winningDirection),
-        exchangeRate: web3.utils.fromWei(bulletinBoard.oddunit) * bulletinBoard.price,
+        exchangeRate: exchangeRate,
         bulletinBoard: {
             oddunit: parseInt(bulletinBoard.oddunit),
             price: parseInt(bulletinBoard.price),
             odds: parseInt(bulletinBoard.odds),
+            funds: parseInt(bulletinBoard.funds),
             kickbackRate: parseInt(bulletinBoard.kickbackRate),
             brokerageRate: parseInt(bulletinBoard.brokerageRate),
             taxRate: parseInt(bulletinBoard.taxRate),
         },
-        canMatchmaking: canMatchmaking,
+        // canMatchmaking: canMatchmaking,
         winningDirection: parseInt(winningDirection),
+        queueCount: parseInt(queueCount),
         frontQueueCount: parseInt(frontQueueCount),
         backQueueCount: parseInt(backQueueCount)
     };
@@ -135,15 +142,17 @@ module.exports.frontQueue = async function (req, res) {
     var address = uri.query['address'];
     const instance = await OddsdexContract.at(address);
 
-    var frontQueueCount = await instance.getFrontQueueCount();
-    var count = parseInt(frontQueueCount);
+    var queue = await instance.getTopFiveBillFrontQueue();
+    var length = queue['length'];
+    var bills = queue['bills'];
     var list = [];
-    for (var i = 0; i < count; i++) {
-        var bill = await instance.getFrontBillQueue(i);
+    for (var i = bills.length - length; i < bills.length; i++) {
+        var bill = bills[i];
         list.push({
-            buyPrice:parseInt(bill['buyPrice']),
-            odds:parseInt(bill['odds']),
-            player:bill['owner']
+            buyPrice: parseInt(bill['buyPrice']),
+            odds: parseInt(bill['odds']),
+            costs: parseInt(bill['costs']),
+            player: bill['owner']
         });
     }
     res.end(JSON.stringify(list));
@@ -152,16 +161,18 @@ module.exports.backQueue = async function (req, res) {
     var uri = url.parse(req.url, true);
     var address = uri.query['address'];
     const instance = await OddsdexContract.at(address);
-
-    var backQueueCount = await instance.getBackQueueCount();
-    var count = parseInt(backQueueCount);
+    
+    var queue = await instance.getTopFiveBillBackQueue();
+    var length = queue['length'];
+    var bills = queue['bills'];
     var list = [];
-    for (var i = 0; i < count; i++) {
-        var bill = await instance.getBackBillQueue(i);
+    for (var i = bills.length - 1; i >= bills.length - length; i--) {
+        var bill = bills[i];
         list.push({
-            buyPrice:parseInt(bill['buyPrice']),
-            odds:parseInt(bill['odds']),
-            player:bill['owner']
+            buyPrice: parseInt(bill['buyPrice']),
+            odds: parseInt(bill['odds']),
+            costs: parseInt(bill['costs']),
+            player: bill['owner']
         });
     }
     res.end(JSON.stringify(list));
