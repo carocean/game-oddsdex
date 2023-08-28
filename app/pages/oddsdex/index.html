@@ -9,20 +9,14 @@
     <div class="dx-layout">
         <div class="dx-left">
             <ul class="dx-panel">
-                <li class="dx-dts" state>
-                    <label>状态</label><span>xxx</span>
+                <li class="dx-dts" isRunning>
+                    <label>启/停</label><span>xxx</span>
                 </li>
                 <li class="dx-dts" price>
                     <label>现价</label><span>xxx</span>odds
                 </li>
                 <li class="dx-dts" exchangeRate>
                     <label>汇率(1odd-?eth)</label><span>xxx</span>
-                </li>
-                <li class="dx-dts" winningDirection>
-                    <label>赢方</label><span>xxx</span>
-                </li>
-                <li class="dx-dts" canMatchmaking>
-                    <label>是否可撮合</label><span>xxx</span>
                 </li>
                 <li class="dx-dts" frontQueueCount>
                     <label>正面队列数</label><span>xxx</span>
@@ -32,6 +26,9 @@
                 </li>
                 <li class="dx-dts" queueCount>
                     <label>在单总数</label><span>xxx</span>
+                </li>
+                <li class="dx-dts" matchmake>
+                    <label>撮合测试</label><span>测试</span>
                 </li>
                 <li class="dx-dts" kickbackRate>
                     <label>手续费率</label><span>xxx</span>
@@ -43,12 +40,6 @@
                             <p><label>平台分账比</label><span>xxx</span></p>
                         </li>
                     </ul>
-                </li>
-                <li class="dx-dts" isRunning>
-                    <label>启/停</label><span>xxx</span>
-                </li>
-                <li class="dx-dts" coverHash>
-                    <label>本轮coverHash</label><p><span>xxx</span></p>
                 </li>
                 <li class="dx-dts" total>
                     <label>总量</label>
@@ -130,7 +121,10 @@
             <ul class="dx-buy">
                 <li class="dx-buy-price">
                     <ul>
-                        <li price><div class="dx-buy-price-input"><label>价格：</label><input placeholder="输入你想认购的价格..." price></div></li>
+                        <li price>
+                            <div class="dx-buy-price-input"><label>价格：</label><input placeholder="输入你想认购的价格..." price>
+                            </div>
+                        </li>
                         <li up><a>+</a></li>
                         <li down><a>-</a></li>
                     </ul>
@@ -171,7 +165,8 @@
     </div>
 </div>
 
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jquery.json-viewer@1.5.0/json-viewer/jquery.json-viewer.min.css">
+<link rel="stylesheet"
+    href="https://cdn.jsdelivr.net/npm/jquery.json-viewer@1.5.0/json-viewer/jquery.json-viewer.min.css">
 <link href="/css/oddsdex.css" rel="stylesheet">
 <link href="/css/dialog.css" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/web3/4.0.1-alpha.5/web3.min.js"

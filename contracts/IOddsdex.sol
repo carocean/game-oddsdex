@@ -1,20 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.4.22 <0.8.20;
 
-//内部发动机自行运转，捫、开、撮、捫、开、撮……
-//输赢：合约每次生成的随机数+所有玩家的幸运数 -> %2
 interface IOddsdexContract {
-    function getState() external returns (OddsdexState);
-
-    function getWinningDirection() external returns (CoinDirection);
-
     function getWeiPrice() external returns (uint256);
 
     function getBulletinBoard() external returns (BulletinBoard memory);
-
-    function getCoverHash() external returns (uint256 coverHash);
-
-    function genHash(uint256 number) external returns (uint256);
 
     function isRunning() external returns (bool);
 
@@ -52,13 +42,9 @@ interface IOddsdexContract {
         external
         returns (uint32 length, StakeBill[5] memory bills);
 
-    function cover(uint256 _hash) external;
-
-    function lotteryDraw(
-        uint256 _luckyNumber
-    ) external returns (CoinDirection direction);
-
-    function canMatchmaking() external returns (bool matched);
+    function canMatchmaking(
+        CoinDirection winningDirection
+    ) external returns (bool matched);
 
     function matchmake() external;
 
@@ -68,31 +54,18 @@ interface IOddsdexContract {
         uint32 luckyNumber
     ) external payable;
 
-    event OnLotteryEvent(LotteryMessage message);
-
-    event OnMatchMakingEvent(MatchmakingBill bill);
     event OnStakeBillEvent(StakeBill bill);
+    event OnMatchMakingEvent(MatchmakingBill bill);
     event OnRefundBillEvent(RefundBill bill);
     event OnSplitBillEvent(SplitBill bill);
 }
-struct LotteryMessage {
-    CoinDirection winningDirection;
-    uint256 luckyNumber;
-    address broker;
-    uint256 coverHash;
-}
+
 enum CoinDirection {
     unknown,
     front,
     back
 }
-enum OddsdexState {
-    covering,
-    lottering,
-    lottered,
-    matchmaking,
-    matchmaked
-}
+
 struct BulletinBoard {
     uint256 oddunit;
     uint256 price; //The price is defined by multiplying the actual price by 100, which means the actual price supports two decimal places
@@ -102,6 +75,18 @@ struct BulletinBoard {
     uint16 brokerageRate;
     uint16 taxRate;
 }
+
+struct LuckyNumber {
+    uint8 r1;
+    uint8 r2;
+    uint8 r3;
+    uint8 r4;
+    uint8 r5;
+    uint8 f;
+    uint8 b;
+    uint256 sign;
+}
+
 struct StakeBill {
     bytes32 id;
     address owner;
@@ -128,6 +113,7 @@ struct MatchmakingBill {
     uint256 tailFRefundCosts;
     uint256 tailBRefundCosts;
     uint256 prize;
+    CoinDirection winningDirection;
 }
 struct RefundBill {
     bytes32 id;

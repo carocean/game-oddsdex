@@ -70,12 +70,12 @@ body {
     padding: 8px 0;
 }
 
-.dx-box .dx-layout .dx-left .dx-panel .dx-dts[state] span {
+.dx-box .dx-layout .dx-left .dx-panel .dx-dts[matchmake] span {
     cursor: pointer;
     color: blue;
 }
 
-.dx-box .dx-layout .dx-left .dx-panel .dx-dts[state] span:hover {
+.dx-box .dx-layout .dx-left .dx-panel .dx-dts[matchmake] span:hover {
     color: red;
 }
 

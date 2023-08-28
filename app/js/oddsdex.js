@@ -8,8 +8,12 @@ $(document).ready(async function () {
             alert('address is null');
             return;
         }
+        $('.dx-header li[contract] span').html(contractAddress);
         $.get('/api/oddsdex.listerners', { address: contractAddress }, function (data) {
             var socket = io();
+            socket.on("connect", () => {
+                console.log(socket.connected); // true
+              });
             socket.on('OnStakeBillEvent', function (msg) {
                 var obj = JSON.parse(msg);
                 // var d = JSON.stringify(obj, null, "<br>");
@@ -101,43 +105,10 @@ $(document).ready(async function () {
         $.get('/api/oddsdex.details', { address: contractAddress }, function (data) {
             console.log(data);
             var obj = JSON.parse(data);
-            var state = '';
-            switch (obj.state) {
-                case 0:
-                    state = '已扪';
-                    break;
-                case 1:
-                    state = '正在开奖';
-                    break;
-                case 2:
-                    state = '已开奖';
-                    break;
-                case 3:
-                    state = '正在撮合';
-                    break;
-                case 4:
-                    state = '已撮合';
-                    break;
-            }
-            var winningDirection = '';
-            switch (obj.winningDirection) {
-                case 0:
-                    winningDirection = '未知';
-                    break;
-                case 1:
-                    winningDirection = '正面赢';
-                    break;
-                case 2:
-                    winningDirection = '背面赢';
-                    break;
-            }
             var price = (obj.bulletinBoard.price / 100.00).toFixed(2);
             $('.dx-buy-price li[price] input[price]').val(price);
+            $('.dx-header li[broker] span').html(obj.broker);
             var panel = $('.dx-panel');
-            panel.find('.dx-dts[state] span').html(state);
-            panel.find('.dx-dts[winningDirection] span').html(winningDirection);
-            panel.find('.dx-dts[canMatchmaking] span').html(obj.canMatchmaking ? '是' : '否');
-            panel.find('.dx-dts[coverHash] span').html(obj.coverHash);
             panel.find('.dx-dts[frontQueueCount] span').html(obj.frontQueueCount);
             panel.find('.dx-dts[backQueueCount] span').html(obj.backQueueCount);
             panel.find('.dx-dts[queueCount] span').html(obj.queueCount);
@@ -153,20 +124,18 @@ $(document).ready(async function () {
         })
     }
     refreshDetails();
-
-    $('.dx-panel .dx-dts[state] span').click(function () {
+    $('.dx-box .dx-layout .dx-left .dx-panel .dx-dts[matchmake] span').click(function () {
         var params = new URLSearchParams(window.location.search)
         var contractAddress = params.get('address');
         if (typeof contractAddress == 'undefined') {
             alert('address is null');
             return;
         }
-        $.get('/api/oddsdex.statescroll', { address: contractAddress }, function (data) {
+        $.get('/api/oddsdex.matchmake', { address: contractAddress }, function (data) {
             refreshDetails();
             refreshDealPanel();
-        });
-    })
-
+        })
+    });
     $('.dx-buy-price li[up] a').click(function () {
         var e = $('.dx-buy-price li[price] input[price]');
         var priceStr = e.val();

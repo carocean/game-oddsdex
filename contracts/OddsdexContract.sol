@@ -6,19 +6,13 @@ import "./SafeMath.sol";
 contract OddsdexContract is IOddsdexContract {
     using SafeMath for *;
 
-    OddsdexState private state;
     bool private running;
     address private root;
     address private broker;
     address private parent;
     BulletinBoard private bulletinBoard;
-    uint256 private coverHash;
-    CoinDirection private winningDirection;
     StakeBill[8 * 32] private stakeBills;
     uint8[32] private stakeBillsBitmap;
-
-    // StakeBill[10] private buyFrontBillQueue;
-    // StakeBill[10] private buyBackBillQueue;
 
     constructor(address _root, address _broker) {
         parent = msg.sender;
@@ -38,7 +32,6 @@ contract OddsdexContract is IOddsdexContract {
             brokerageRate,
             taxRate
         );
-        state = OddsdexState.matchmaked;
         running = true;
     }
 
@@ -54,34 +47,6 @@ contract OddsdexContract is IOddsdexContract {
     modifier mustRunning() {
         require(running, "oddsdex has stopped");
         _;
-    }
-    modifier checkLuckyNumberByBrokerHash(uint256 luckyNumber) {
-        uint256 _hash = genHash(luckyNumber);
-        require(_hash == coverHash, "LuckyNumber verification failed");
-        _;
-    }
-
-    function genHash(uint256 number) public pure override returns (uint256) {
-        bytes32 packed = keccak256(abi.encodePacked(number));
-        uint256 _hash = uint256(packed);
-        return _hash;
-    }
-
-    function getCoverHash() public view override returns (uint256) {
-        return coverHash;
-    }
-
-    function getState() public view override returns (OddsdexState) {
-        return state;
-    }
-
-    function getWinningDirection()
-        public
-        view
-        override
-        returns (CoinDirection)
-    {
-        return winningDirection;
     }
 
     function getWeiPrice() public view override returns (uint256) {
@@ -187,58 +152,127 @@ contract OddsdexContract is IOddsdexContract {
         return (false, ret);
     }
 
-    function lotteryDraw(
-        uint256 _luckyNumber
-    )
-        public
-        override
-        onlyBroker
-        mustRunning
-        checkLuckyNumberByBrokerHash(_luckyNumber)
-        returns (CoinDirection direction)
+    function _calculateWinningDirection()
+        internal
+        view
+        returns (LuckyNumber memory lvar, CoinDirection winningDirection)
     {
-        require(
-            state == OddsdexState.covering,
-            "Must have covering before calling"
+        lvar.r1 = uint8(
+            uint256(
+                keccak256(abi.encodePacked(block.timestamp, block.difficulty))
+            ) % 10
         );
-        state = OddsdexState.lottering;
-        winningDirection = _calculateWinningDirection(_luckyNumber);
-        state = OddsdexState.lottered;
-
-        LotteryMessage memory message = LotteryMessage(
-            winningDirection,
-            _luckyNumber,
-            broker,
-            coverHash
+        lvar.r2 = uint8(
+            uint256(
+                keccak256(
+                    abi.encodePacked(block.timestamp, block.difficulty, lvar.r1)
+                )
+            ) % 10
         );
 
-        emit OnLotteryEvent(message);
+        lvar.r3 = uint8(
+            uint256(
+                keccak256(
+                    abi.encodePacked(
+                        block.timestamp,
+                        block.difficulty,
+                        lvar.r1,
+                        lvar.r2
+                    )
+                )
+            ) % 10
+        );
+        lvar.r4 = uint8(
+            uint256(
+                keccak256(
+                    abi.encodePacked(
+                        block.timestamp,
+                        block.difficulty,
+                        lvar.r1,
+                        lvar.r2,
+                        lvar.r3
+                    )
+                )
+            ) % 10
+        );
+        lvar.r5 = uint8(
+            uint256(
+                keccak256(
+                    abi.encodePacked(
+                        block.timestamp,
+                        block.difficulty,
+                        lvar.r1,
+                        lvar.r2,
+                        lvar.r3,
+                        lvar.r4
+                    )
+                )
+            ) % 10
+        );
 
-        return winningDirection;
-    }
+        uint256 totalF = _totalLuckyNumber(CoinDirection.front);
+        uint256 totalB = _totalLuckyNumber(CoinDirection.back);
 
-    function _calculateWinningDirection(
-        uint256 _luckyNumber
-    ) internal view returns (CoinDirection) {
-        uint total = _luckyNumber;
-        uint32 length = _lengthOfStakeBills(true, CoinDirection.unknown);
-        for (uint32 i = 0; i < length; i++) {
-            (bool exists, StakeBill memory bill) = getStakeBill(i);
-            uint32 luckyNumberOfPlayer = exists ? bill.luckyNumber : 0;
-            total += luckyNumberOfPlayer;
-        }
-        uint v = total % 2;
+        lvar.f = uint8(
+            uint256(
+                keccak256(
+                    abi.encodePacked(block.timestamp, block.difficulty, totalF)
+                )
+            ) % 10
+        );
+        lvar.b = uint8(
+            uint256(
+                keccak256(
+                    abi.encodePacked(block.timestamp, block.difficulty, totalB)
+                )
+            ) % 10
+        );
+
+        uint256 v = uint256(
+            keccak256(
+                abi.encodePacked(
+                    block.timestamp,
+                    block.difficulty,
+                    lvar.r1,
+                    lvar.r2,
+                    lvar.r3,
+                    lvar.r4,
+                    lvar.r5,
+                    lvar.f,
+                    lvar.b
+                )
+            )
+        ) % 2;
+        lvar.sign = v;
         if (v == 1) {
-            return CoinDirection.front;
+            return (lvar, CoinDirection.front);
         } else {
-            return CoinDirection.back;
+            return (lvar, CoinDirection.back);
         }
     }
 
-    function canMatchmaking() public view override returns (bool matched) {
-        if (state != OddsdexState.lottered) {
-            return false;
+    function _totalLuckyNumber(
+        CoinDirection direction
+    ) private view returns (uint256 total) {
+        for (uint32 i = 0; i < stakeBillsBitmap.length; i++) {
+            uint8 b = stakeBillsBitmap[i];
+            for (uint8 j = 0; j < 8; j++) {
+                uint8 v = uint8(b & (2 ** j));
+                if (v == 2 ** j) {
+                    StakeBill memory bill = stakeBills[i * 8 + j];
+                    if (bill.buyDirection != direction) {
+                        continue;
+                    }
+                    total += bill.luckyNumber;
+                }
+            }
         }
+        return total;
+    }
+
+    function canMatchmaking(
+        CoinDirection winningDirection
+    ) public view override returns (bool matched) {
         (uint32 bitIndexAtF, StakeBill memory tailF) = _topFirstOfStakeBill(
             CoinDirection.front
         );
@@ -251,6 +285,7 @@ contract OddsdexContract is IOddsdexContract {
         if (bitIndexAtB == 0xFFFFFFFF) {
             return false;
         }
+
         if (winningDirection == CoinDirection.front) {
             return tailF.buyPrice <= tailB.buyPrice;
         } else if (winningDirection == CoinDirection.back) {
@@ -260,17 +295,11 @@ contract OddsdexContract is IOddsdexContract {
         }
     }
 
-    function matchmake() public override onlyBroker {
-        require(
-            state == OddsdexState.lottered,
-            "Must have lottered before calling"
-        );
-        state = OddsdexState.matchmaking;
-        while (canMatchmaking()) {
-            _matchmakePairBill();
+    function matchmake() public override onlyBroker mustRunning {
+        (, CoinDirection winningDirection) = _calculateWinningDirection();
+        while (canMatchmaking(winningDirection)) {
+            _matchmakePairBill(winningDirection);
         }
-        coverHash = 0x0;
-        state = OddsdexState.matchmaked;
     }
 
     struct LocalVar {
@@ -287,7 +316,7 @@ contract OddsdexContract is IOddsdexContract {
         bytes32 matchmakingBillId;
     }
 
-    function _matchmakePairBill() internal {
+    function _matchmakePairBill(CoinDirection winningDirection) internal {
         //撮合一次对单之后，吃不掉的再次放入队列中，因此等下轮撮合，所以只考虑撮合当前对单即可
         (uint32 bitIndexAtF, StakeBill memory tailF) = _topFirstOfStakeBill(
             CoinDirection.front
@@ -311,16 +340,12 @@ contract OddsdexContract is IOddsdexContract {
         lvar.dealPrice = (tailF.buyPrice.add(tailB.buyPrice)).div(2);
         lvar.tailFOdds = tailF.odds.sub(lvar.dealOdds);
         lvar.tailBOdds = tailB.odds.sub(lvar.dealOdds);
-        lvar.tailFCostOnBill = lvar
-            .tailFOdds
-            .mul(tailF.buyPrice)
-            .mul(bulletinBoard.oddunit)
-            .div(100);
-        lvar.tailBCostOnBill = lvar
-            .tailBOdds
-            .mul(tailB.buyPrice)
-            .mul(bulletinBoard.oddunit)
-            .div(100);
+        lvar.tailFCostOnBill = lvar.tailFOdds.mul(tailF.buyPrice).mul(
+            bulletinBoard.oddunit
+        );
+        lvar.tailBCostOnBill = lvar.tailBOdds.mul(tailB.buyPrice).mul(
+            bulletinBoard.oddunit
+        );
 
         //如果有剩余则存回
         if (lvar.tailFOdds > 0) {
@@ -334,22 +359,18 @@ contract OddsdexContract is IOddsdexContract {
             storeStakeBill(tailB);
         }
 
-        lvar.prize = lvar
-            .dealOdds
-            .mul(lvar.dealPrice)
-            .mul(bulletinBoard.oddunit)
-            .div(100);
+        lvar.prize = lvar.dealOdds.mul(lvar.dealPrice).mul(
+            bulletinBoard.oddunit
+        );
         lvar.tailFRefundCost = tailF
             .odds
             .mul(tailF.buyPrice)
             .mul(bulletinBoard.oddunit)
-            .div(100)
             .sub(lvar.tailFCostOnBill);
         lvar.tailBRefundCost = tailB
             .odds
             .mul(tailB.buyPrice)
             .mul(bulletinBoard.oddunit)
-            .div(100)
             .sub(lvar.tailBCostOnBill);
 
         //mtn is Matchmaking transaction number
@@ -387,7 +408,8 @@ contract OddsdexContract is IOddsdexContract {
             lvar.tailBCostOnBill,
             lvar.tailFRefundCost,
             lvar.tailBRefundCost,
-            lvar.prize
+            lvar.prize,
+            winningDirection
         );
         emit OnMatchMakingEvent(_mbill);
     }
@@ -402,7 +424,17 @@ contract OddsdexContract is IOddsdexContract {
         }
         address player = bill.owner;
         (bool success, ) = payable(player).call{value: costs}(new bytes(0));
-        require(success, "ETH_TRANSFER_FAILED");
+        require(
+            success,
+            string(
+                abi.encodePacked(
+                    "ETH_TRANSFER_FAILED: Refund to palyer. Refund costs: ",
+                    costs,
+                    ", player: ",
+                    player
+                )
+            )
+        );
 
         bytes32 idBytes = keccak256(
             abi.encodePacked(block.timestamp, block.difficulty)
@@ -431,13 +463,39 @@ contract OddsdexContract is IOddsdexContract {
         (bool success, ) = payable(player).call{value: bonusOfPlayer}(
             new bytes(0)
         );
-        require(success, "ETH_TRANSFER_FAILED");
+        require(
+            success,
+            string(
+                abi.encodePacked(
+                    "ETH_TRANSFER_FAILED: split prize to palyer. bonus: ",
+                    bonusOfPlayer,
+                    ", player: ",
+                    player
+                )
+            )
+        );
         (bool success1, ) = payable(broker).call{value: brokerage}(
             new bytes(0)
         );
-        require(success1, "ETH_TRANSFER_FAILED");
+        require(
+            success1,
+            string(
+                abi.encodePacked(
+                    "ETH_TRANSFER_FAILED: split prize to broker. brokerage: ",
+                    bonusOfPlayer
+                )
+            )
+        );
         (bool success2, ) = payable(root).call{value: tax}(new bytes(0));
-        require(success2, "ETH_TRANSFER_FAILED");
+        require(
+            success2,
+            string(
+                abi.encodePacked(
+                    "ETH_TRANSFER_FAILED: split prize to root. tax: ",
+                    bonusOfPlayer
+                )
+            )
+        );
 
         bytes32 idBytes = keccak256(
             abi.encodePacked(block.timestamp, block.difficulty)
@@ -463,15 +521,6 @@ contract OddsdexContract is IOddsdexContract {
         return a <= b ? a : b;
     }
 
-    function cover(uint256 _hash) public override onlyBroker mustRunning {
-        require(
-            state == OddsdexState.matchmaked,
-            "Must have matchmaked before calling"
-        );
-        coverHash = _hash;
-        state = OddsdexState.covering;
-    }
-
     fallback() external payable {
         require(false, "No other calls supported");
     }
@@ -484,15 +533,12 @@ contract OddsdexContract is IOddsdexContract {
         uint256 buyPrice,
         CoinDirection buyDirection,
         uint32 luckyNumber
-    ) external payable override {
+    ) external payable override mustRunning {
         require(
             buyDirection != CoinDirection.unknown,
             "Buying direction is unknown"
         );
-        require(
-            state != OddsdexState.matchmaking,
-            "Do not accept orders when matching"
-        );
+
         uint256 odds = msg.value.div(bulletinBoard.oddunit.mul(buyPrice));
         // require(odds >= 10, "Minimum purchase of 10 odds");
         bulletinBoard.odds = bulletinBoard.odds.add(odds);

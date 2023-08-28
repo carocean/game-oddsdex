@@ -4,7 +4,6 @@ var Web3 = require("web3");
 var path = require('path');
 const contract = require("@truffle/contract");
 const { time } = require('console');
-const stateController = require('../api/state_controller.js');
 
 const provider = new Web3.providers.WebsocketProvider('ws://192.168.0.254:8545');
 const web3 = new Web3(provider);
@@ -174,6 +173,9 @@ const OnMatchMakingEvent = async function (error, msg) {
             }, {
                 type: 'uint256',
                 name: 'prize'
+            }, {
+                type: 'uint8',
+                name: 'winningDirection'
             }
         ],
         data,
@@ -193,7 +195,8 @@ const OnMatchMakingEvent = async function (error, msg) {
         tailBCostOnBill: zz['tailBCostOnBill'],
         tailFRefundCosts: zz['tailFRefundCosts'],
         tailBRefundCosts: zz['tailBRefundCosts'],
-        prize: zz['prize']
+        prize: zz['prize'],
+        winningDirection: zz['winningDirection']
     }
     // res.end(JSON.stringify(map));
     var json = JSON.stringify(map);
@@ -201,46 +204,6 @@ const OnMatchMakingEvent = async function (error, msg) {
         var socket = sockets[key];
         socket.emit('OnMatchMakingEvent', json);
     }
-}
-const OnLotteryEvent = async function (error, msg) {
-    var raw = msg.raw;
-    var data = raw.data;
-    var topics = raw.topics;
-    var zz = web3.eth.abi.decodeLog(
-        [
-            {
-                type: 'uint8',
-                name: 'winningDirection'
-            },
-            , {
-                type: 'uint256',
-                name: 'luckyNumber'
-            }, {
-                type: 'address',
-                name: 'broker'
-            }, {
-                type: 'uint256',
-                name: 'coverHash'
-            }
-        ],
-        data,
-        topics
-    );
-    var map = {
-        winningDirection: parseInt(zz['winningDirection']),
-        luckyNumber: parseInt(zz['luckyNumber']),
-        broker: zz['broker'],
-        coverHash: parseInt(zz['coverHash']),
-    }
-    // res.end(JSON.stringify(map));
-    var json = JSON.stringify(map);
-    for (var key in sockets) {
-        var socket = sockets[key];
-        socket.emit('OnLotteryEvent', json);
-    }
-    // const instance = await OddsdexContract.at(msg.address);
-    // stateController(web3, instance);
-    // console.log(map);
 }
 const OnStakeBillEvent = async function (error, msg) {
     var raw = msg.raw;
@@ -313,8 +276,8 @@ const OnStakeBillEvent = async function (error, msg) {
         var socket = sockets[key];
         socket.emit('OnStakeBillEvent', json);
     }
-    const instance = await OddsdexContract.at(msg.address);
-    stateController(web3, instance);
+    // const instance = await OddsdexContract.at(msg.address);
+    // stateController(web3, instance);
     console.log(map);
 };
 
@@ -324,16 +287,17 @@ module.exports.listerners = async function (req, res) {
     const instance = await OddsdexContract.at(address);
 
     instance.OnStakeBillEvent(OnStakeBillEvent);
-    instance.OnLotteryEvent(OnLotteryEvent);
     instance.OnMatchMakingEvent(OnMatchMakingEvent);
     instance.OnRefundBillEvent(OnRefundBillEvent);
     instance.OnSplitBillEvent(OnSplitBillEvent);
 }
-module.exports.statescroll = async function (req, res) {
+module.exports.matchmake = async function (req, res) {
     var uri = url.parse(req.url, true);
     var address = uri.query['address'];
     const instance = await OddsdexContract.at(address);
-    stateController(web3, instance);
+
+    var broker = await instance.getBroker();
+    await instance.matchmake({ from: broker });
 }
 module.exports.details = async function (req, res) {
     var uri = url.parse(req.url, true);
@@ -342,22 +306,16 @@ module.exports.details = async function (req, res) {
 
     var root = await instance.getRoot();
     var broker = await instance.getBroker();
-    var state = await instance.getState();
     var isRunning = await instance.isRunning();
-    var winningDirection = await instance.getWinningDirection();
     var bulletinBoard = await instance.getBulletinBoard();
-    var canMatchmaking = await instance.canMatchmaking();
-    var winningDirection = await instance.getWinningDirection();
     var queueCount = await instance.getQueueCount();
     var frontQueueCount = await instance.getFrontQueueCount();
     var backQueueCount = await instance.getBackQueueCount();
-    var coverHash = await instance.getCoverHash();
     var exchangeRate = web3.utils.fromWei((parseInt(bulletinBoard.oddunit) * parseInt(bulletinBoard.price)) + '', 'ether');
     var map = {
         root: root,
-        state: parseInt(state),
+        broker:broker,
         isRunning: isRunning,
-        winningDirection: parseInt(winningDirection),
         exchangeRate: exchangeRate,
         bulletinBoard: {
             oddunit: parseInt(bulletinBoard.oddunit),
@@ -368,12 +326,9 @@ module.exports.details = async function (req, res) {
             brokerageRate: parseInt(bulletinBoard.brokerageRate),
             taxRate: parseInt(bulletinBoard.taxRate),
         },
-        canMatchmaking: canMatchmaking,
-        winningDirection: parseInt(winningDirection),
         queueCount: parseInt(queueCount),
         frontQueueCount: parseInt(frontQueueCount),
-        backQueueCount: parseInt(backQueueCount),
-        coverHash: coverHash
+        backQueueCount: parseInt(backQueueCount)
     };
     res.end(JSON.stringify(map));
 }
