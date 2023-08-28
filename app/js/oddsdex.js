@@ -15,7 +15,6 @@ $(document).ready(async function () {
                 // var d = JSON.stringify(obj, null, "<br>");
                 $('.dx-events').jsonViewer(obj);
                 refreshDetails();
-                debugger;
                 refreshDealPanel();
             })
             socket.on('OnLotteryEvent', function (msg) {
@@ -23,7 +22,6 @@ $(document).ready(async function () {
                 // var d = JSON.stringify(obj, null, "<br>");
                 $('.dx-events').jsonViewer(obj);
                 refreshDetails();
-                debugger;
                 refreshDealPanel();
             })
             socket.on('OnMatchMakingEvent', function (msg) {
@@ -31,7 +29,6 @@ $(document).ready(async function () {
                 // var d = JSON.stringify(obj, null, "<br>");
                 $('.dx-events').jsonViewer(obj);
                 refreshDetails();
-                debugger;
                 refreshDealPanel();
             })
             socket.on('OnRefundBillEvent', function (msg) {
@@ -39,7 +36,6 @@ $(document).ready(async function () {
                 // var d = JSON.stringify(obj, null, "<br>");
                 $('.dx-events').jsonViewer(obj);
                 refreshDetails();
-                debugger;
                 refreshDealPanel();
             })
             socket.on('OnSplitBillEvent', function (msg) {
@@ -47,7 +43,6 @@ $(document).ready(async function () {
                 // var d = JSON.stringify(obj, null, "<br>");
                 $('.dx-events').jsonViewer(obj);
                 refreshDetails();
-                debugger;
                 refreshDealPanel();
             })
             $('.dx-events').html('事件接收区已准备好');
@@ -158,6 +153,20 @@ $(document).ready(async function () {
         })
     }
     refreshDetails();
+
+    $('.dx-panel .dx-dts[state] span').click(function () {
+        var params = new URLSearchParams(window.location.search)
+        var contractAddress = params.get('address');
+        if (typeof contractAddress == 'undefined') {
+            alert('address is null');
+            return;
+        }
+        $.get('/api/oddsdex.statescroll', { address: contractAddress }, function (data) {
+            refreshDetails();
+            refreshDealPanel();
+        });
+    })
+
     $('.dx-buy-price li[up] a').click(function () {
         var e = $('.dx-buy-price li[price] input[price]');
         var priceStr = e.val();

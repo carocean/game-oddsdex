@@ -70,6 +70,15 @@ body {
     padding: 8px 0;
 }
 
+.dx-box .dx-layout .dx-left .dx-panel .dx-dts[state] span {
+    cursor: pointer;
+    color: blue;
+}
+
+.dx-box .dx-layout .dx-left .dx-panel .dx-dts[state] span:hover {
+    color: red;
+}
+
 .dx-box .dx-layout .dx-left .dx-panel .dx-dts[kickbackRate] li {
     list-style: none;
     list-style-type: none;

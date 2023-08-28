@@ -329,7 +329,12 @@ module.exports.listerners = async function (req, res) {
     instance.OnRefundBillEvent(OnRefundBillEvent);
     instance.OnSplitBillEvent(OnSplitBillEvent);
 }
-
+module.exports.statescroll = async function (req, res) {
+    var uri = url.parse(req.url, true);
+    var address = uri.query['address'];
+    const instance = await OddsdexContract.at(address);
+    stateController(web3, instance);
+}
 module.exports.details = async function (req, res) {
     var uri = url.parse(req.url, true);
     var address = uri.query['address'];
