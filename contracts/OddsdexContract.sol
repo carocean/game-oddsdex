@@ -2,6 +2,7 @@
 pragma solidity >=0.4.22 <0.8.20;
 import "./IOddsdex.sol";
 import "./SafeMath.sol";
+import "./Strings.sol";
 
 contract OddsdexContract is IOddsdexContract {
     using SafeMath for *;
@@ -82,6 +83,10 @@ contract OddsdexContract is IOddsdexContract {
         return broker;
     }
 
+    function getBalance() public view override returns (uint256) {
+        return address(this).balance;
+    }
+
     function getQueueCount() public view override returns (uint256) {
         return _lengthOfStakeBills(true, CoinDirection.unknown);
     }
@@ -159,13 +164,24 @@ contract OddsdexContract is IOddsdexContract {
     {
         lvar.r1 = uint8(
             uint256(
-                keccak256(abi.encodePacked(block.timestamp, block.difficulty))
+                keccak256(
+                    abi.encodePacked(
+                        block.timestamp,
+                        block.difficulty,
+                        msg.sender
+                    )
+                )
             ) % 10
         );
         lvar.r2 = uint8(
             uint256(
                 keccak256(
-                    abi.encodePacked(block.timestamp, block.difficulty, lvar.r1)
+                    abi.encodePacked(
+                        block.timestamp,
+                        block.difficulty,
+                        msg.sender,
+                        lvar.r1
+                    )
                 )
             ) % 10
         );
@@ -176,6 +192,7 @@ contract OddsdexContract is IOddsdexContract {
                     abi.encodePacked(
                         block.timestamp,
                         block.difficulty,
+                        msg.sender,
                         lvar.r1,
                         lvar.r2
                     )
@@ -188,6 +205,7 @@ contract OddsdexContract is IOddsdexContract {
                     abi.encodePacked(
                         block.timestamp,
                         block.difficulty,
+                        msg.sender,
                         lvar.r1,
                         lvar.r2,
                         lvar.r3
@@ -201,6 +219,7 @@ contract OddsdexContract is IOddsdexContract {
                     abi.encodePacked(
                         block.timestamp,
                         block.difficulty,
+                        msg.sender,
                         lvar.r1,
                         lvar.r2,
                         lvar.r3,
@@ -216,14 +235,24 @@ contract OddsdexContract is IOddsdexContract {
         lvar.f = uint8(
             uint256(
                 keccak256(
-                    abi.encodePacked(block.timestamp, block.difficulty, totalF)
+                    abi.encodePacked(
+                        block.timestamp,
+                        block.difficulty,
+                        msg.sender,
+                        totalF
+                    )
                 )
             ) % 10
         );
         lvar.b = uint8(
             uint256(
                 keccak256(
-                    abi.encodePacked(block.timestamp, block.difficulty, totalB)
+                    abi.encodePacked(
+                        block.timestamp,
+                        block.difficulty,
+                        msg.sender,
+                        totalB
+                    )
                 )
             ) % 10
         );
@@ -233,6 +262,7 @@ contract OddsdexContract is IOddsdexContract {
                 abi.encodePacked(
                     block.timestamp,
                     block.difficulty,
+                    msg.sender,
                     lvar.r1,
                     lvar.r2,
                     lvar.r3,
@@ -296,10 +326,13 @@ contract OddsdexContract is IOddsdexContract {
     }
 
     function matchmake() public override onlyBroker mustRunning {
-        (, CoinDirection winningDirection) = _calculateWinningDirection();
-        while (canMatchmaking(winningDirection)) {
-            _matchmakePairBill(winningDirection);
+        uint32 matchmakeTimes;
+        (, CoinDirection _winningDirection) = _calculateWinningDirection();
+        while (canMatchmaking(_winningDirection)) {
+            _matchmakePairBill(_winningDirection);
+            matchmakeTimes++;
         }
+        emit OnMatchmakeReturn(matchmakeTimes, _winningDirection);
     }
 
     struct LocalVar {
@@ -316,7 +349,7 @@ contract OddsdexContract is IOddsdexContract {
         bytes32 matchmakingBillId;
     }
 
-    function _matchmakePairBill(CoinDirection winningDirection) internal {
+    function _matchmakePairBill(CoinDirection winningDirection) private {
         //撮合一次对单之后，吃不掉的再次放入队列中，因此等下轮撮合，所以只考虑撮合当前对单即可
         (uint32 bitIndexAtF, StakeBill memory tailF) = _topFirstOfStakeBill(
             CoinDirection.front
@@ -373,6 +406,20 @@ contract OddsdexContract is IOddsdexContract {
             .mul(bulletinBoard.oddunit)
             .sub(lvar.tailBCostOnBill);
 
+        //Verify Balance
+        uint256 minimumBalance = lvar
+            .prize
+            .add(lvar.tailFRefundCost)
+            .add(lvar.tailBRefundCost);
+            // .add(0.1*(10**18));//Estimating gas fee, Set to 1 because dynamic estimation is also inaccurate
+        require(
+            address(this).balance >= minimumBalance,
+            string.concat(
+                "Insufficient contract balance. minimum balance: ",
+                Strings.toString(minimumBalance)
+            )
+        );
+
         //mtn is Matchmaking transaction number
         lvar.mtn = bytes32(
             keccak256(abi.encodePacked(block.timestamp, block.difficulty))
@@ -418,7 +465,7 @@ contract OddsdexContract is IOddsdexContract {
         bytes32 mtn,
         uint256 costs,
         StakeBill memory bill
-    ) internal {
+    ) private {
         if (costs == 0) {
             return;
         }
@@ -429,7 +476,7 @@ contract OddsdexContract is IOddsdexContract {
             string(
                 abi.encodePacked(
                     "ETH_TRANSFER_FAILED: Refund to palyer. Refund costs: ",
-                    costs,
+                    Strings.toString(costs),
                     ", player: ",
                     player
                 )
@@ -453,7 +500,7 @@ contract OddsdexContract is IOddsdexContract {
         bytes32 mtn,
         uint256 prize,
         StakeBill memory bill
-    ) internal {
+    ) private {
         address player = bill.owner;
         uint256 kickback = prize.mul(bulletinBoard.kickbackRate).div(100);
         uint256 bonusOfPlayer = prize.sub(kickback);
@@ -468,7 +515,7 @@ contract OddsdexContract is IOddsdexContract {
             string(
                 abi.encodePacked(
                     "ETH_TRANSFER_FAILED: split prize to palyer. bonus: ",
-                    bonusOfPlayer,
+                    Strings.toString(bonusOfPlayer),
                     ", player: ",
                     player
                 )
@@ -482,7 +529,7 @@ contract OddsdexContract is IOddsdexContract {
             string(
                 abi.encodePacked(
                     "ETH_TRANSFER_FAILED: split prize to broker. brokerage: ",
-                    bonusOfPlayer
+                    Strings.toString(bonusOfPlayer)
                 )
             )
         );
@@ -492,13 +539,13 @@ contract OddsdexContract is IOddsdexContract {
             string(
                 abi.encodePacked(
                     "ETH_TRANSFER_FAILED: split prize to root. tax: ",
-                    bonusOfPlayer
+                    Strings.toString(bonusOfPlayer)
                 )
             )
         );
 
         bytes32 idBytes = keccak256(
-            abi.encodePacked(block.timestamp, block.difficulty)
+            abi.encodePacked(block.timestamp, block.difficulty, msg.sender)
         );
         SplitBill memory _sbill = SplitBill(
             idBytes,
@@ -519,6 +566,17 @@ contract OddsdexContract is IOddsdexContract {
 
     function _min(uint256 a, uint256 b) internal pure returns (uint256) {
         return a <= b ? a : b;
+    }
+
+    function recharge() external payable onlyBroker mustRunning {
+        require(msg.value > 0, "Feeding cannot be zero");
+        RechargeBill memory bm = RechargeBill(
+            msg.sender,
+            msg.value,
+            address(this).balance,
+            gasleft()
+        );
+        emit OnRechargeEvent(bm);
     }
 
     fallback() external payable {

@@ -16,6 +16,8 @@ interface IOddsdexContract {
 
     function getBroker() external returns (address);
 
+    function getBalance() external returns (uint256);
+
     function getStakeBill(
         uint32 index
     ) external returns (bool exists, StakeBill memory bill);
@@ -42,6 +44,8 @@ interface IOddsdexContract {
         external
         returns (uint32 length, StakeBill[5] memory bills);
 
+    function recharge() external payable;
+
     function canMatchmaking(
         CoinDirection winningDirection
     ) external returns (bool matched);
@@ -54,6 +58,11 @@ interface IOddsdexContract {
         uint32 luckyNumber
     ) external payable;
 
+    event OnMatchmakeReturn(
+        uint32 matchmakeTimes,
+        CoinDirection winningDirection
+    );
+    event OnRechargeEvent(RechargeBill bill);
     event OnStakeBillEvent(StakeBill bill);
     event OnMatchMakingEvent(MatchmakingBill bill);
     event OnRefundBillEvent(RefundBill bill);
@@ -86,7 +95,12 @@ struct LuckyNumber {
     uint8 b;
     uint256 sign;
 }
-
+struct RechargeBill {
+    address broker;
+    uint256 amount;
+    uint256 balance;
+    uint256 gas;
+}
 struct StakeBill {
     bytes32 id;
     address owner;

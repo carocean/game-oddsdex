@@ -1,6 +1,8 @@
 $(document).ready(async function () {
     const web3 = new Web3(window.ethereum);
 
+    sessionStorage.setItem("dx-bill", $('.dx-box .dx-queue .dx-bill').first().prop('outerHTML'));
+
     (function () {
         var params = new URLSearchParams(window.location.search)
         var contractAddress = params.get('address');
@@ -13,43 +15,53 @@ $(document).ready(async function () {
             var socket = io();
             socket.on("connect", () => {
                 console.log(socket.connected); // true
-              });
+            });
             socket.on('OnStakeBillEvent', function (msg) {
                 var obj = JSON.parse(msg);
                 // var d = JSON.stringify(obj, null, "<br>");
-                $('.dx-events').jsonViewer(obj);
+                var e = $('<ul class="dx-jsonviewer"><li e-name><i>玩家买入[OnStakeBillEvent]:</i></li><li e-cnt><p></p></li></ul>');
+                e.find('li[e-cnt] p').jsonViewer(obj);
+                $('.dx-events').append(e);
                 refreshDetails();
                 refreshDealPanel();
             })
-            socket.on('OnLotteryEvent', function (msg) {
+            socket.on('OnRechargeEvent', function (msg) {
                 var obj = JSON.parse(msg);
                 // var d = JSON.stringify(obj, null, "<br>");
-                $('.dx-events').jsonViewer(obj);
+                var e = $('<ul class="dx-jsonviewer"><li e-name><i>经纪人充值[OnRechargeEvent]:</i></li><li e-cnt><p></p></li></ul>');
+                e.find('li[e-cnt] p').jsonViewer(obj);
+                $('.dx-events').append(e);
                 refreshDetails();
                 refreshDealPanel();
             })
             socket.on('OnMatchMakingEvent', function (msg) {
                 var obj = JSON.parse(msg);
                 // var d = JSON.stringify(obj, null, "<br>");
-                $('.dx-events').jsonViewer(obj);
+                var e = $('<ul class="dx-jsonviewer"><li e-name><i>撮合[OnMatchMakingEvent]:</i></li><li e-cnt><p></p></li></ul>');
+                e.find('li[e-cnt] p').jsonViewer(obj);
+                $('.dx-events').append(e);
                 refreshDetails();
                 refreshDealPanel();
             })
             socket.on('OnRefundBillEvent', function (msg) {
                 var obj = JSON.parse(msg);
                 // var d = JSON.stringify(obj, null, "<br>");
-                $('.dx-events').jsonViewer(obj);
+                var e = $('<ul class="dx-jsonviewer"><li e-name><i>资金退回[OnRefundBillEvent]:</i></li><li e-cnt><p></p></li></ul>');
+                e.find('li[e-cnt] p').jsonViewer(obj);
+                $('.dx-events').append(e);
                 refreshDetails();
                 refreshDealPanel();
             })
             socket.on('OnSplitBillEvent', function (msg) {
                 var obj = JSON.parse(msg);
                 // var d = JSON.stringify(obj, null, "<br>");
-                $('.dx-events').jsonViewer(obj);
+                var e = $('<ul class="dx-jsonviewer"><li e-name><i>清算拆单[OnSplitBillEvent]:</i></li><li e-cnt><p></p></li></ul>');
+                e.find('li[e-cnt] p').jsonViewer(obj);
+                $('.dx-events').append(e);
                 refreshDetails();
                 refreshDealPanel();
             })
-            $('.dx-events').html('事件接收区已准备好');
+            // $('.dx-events').html('事件接收区已准备好<br>');
         });
     })();
 
@@ -64,7 +76,7 @@ $(document).ready(async function () {
             console.log(data);
             var list = JSON.parse(data);
             var fQueueE = $('.dx-front-q .dx-queue').first();
-            var fBillE = fQueueE.find('.dx-bill').first().clone();
+            var fBillE = $(sessionStorage.getItem("dx-bill"));
             fQueueE.empty();
             for (var i = 0; i < list.length; i++) {
                 var bill = list[i];
@@ -80,7 +92,7 @@ $(document).ready(async function () {
             console.log(data);
             var list = JSON.parse(data);
             var bQueueE = $('.dx-back-q .dx-queue').first();
-            var bBillE = bQueueE.find('.dx-bill').first().clone();
+            var bBillE = $(sessionStorage.getItem("dx-bill"));
             bQueueE.empty();
             for (var i = 0; i < list.length; i++) {
                 var bill = list[i];
@@ -111,6 +123,7 @@ $(document).ready(async function () {
             var panel = $('.dx-panel');
             panel.find('.dx-dts[frontQueueCount] span').html(obj.frontQueueCount);
             panel.find('.dx-dts[backQueueCount] span').html(obj.backQueueCount);
+            panel.find('.dx-dts[balance] span').html(obj.balance);
             panel.find('.dx-dts[queueCount] span').html(obj.queueCount);
             panel.find('.dx-dts[isRunning] span').html(obj.isRunning == true ? '正在运行' : '停止');
             panel.find('.dx-dts[price] span').html(price);
@@ -131,11 +144,58 @@ $(document).ready(async function () {
             alert('address is null');
             return;
         }
+        var the = $(this);
+        var p = the.parents('.dx-dts[matchmake]').find('p');
+        p.empty();
         $.get('/api/oddsdex.matchmake', { address: contractAddress }, function (data) {
+            console.log(data);
+            var obj = JSON.parse(data);
+            var winD = '未定';
+            switch (obj.winningDirection) {
+                case 1:
+                    winD = '正面赢';
+                    break;
+                case 2:
+                    winD = '背面赢';
+                    break;
+            }
+            p.html("<i><label>撮合次数：" + obj.matchmakeTimes + "</label></i><i><label>赢方：" + winD + "</label></i>");
+            p.show();
             refreshDetails();
             refreshDealPanel();
         })
     });
+    $('.dx-box .dx-panel .dx-dts[balance] span').click(async function () {
+        var input = prompt("输入金额ether", "0.1");
+        if (input == null) {
+            return;
+        }
+        var params = new URLSearchParams(window.location.search)
+        var contractAddress = params.get('address');
+        if (typeof contractAddress == 'undefined') {
+            alert('address is null');
+            return;
+        }
+        var broker = $('.dx-box .dx-header li[broker] span').html();
+        const amountWei = web3.utils.toWei(input, "ether");
+        const transaction = {
+            from: broker,
+            to: contractAddress,
+            value: amountWei,
+            data: web3.eth.abi.encodeFunctionSignature('recharge()')
+            // nonce: Math.floor((Math.random()*100000)+1)
+        };
+        // Send the transaction
+        try {
+            const result = await web3.eth.sendTransaction(transaction);
+            refreshDetails();
+            refreshDealPanel();
+            console.log("Transaction result:", result);
+        } catch (err) {
+            // Handle error
+            console.error("Failed to send transaction:", err);// Update status
+        }
+    })
     $('.dx-buy-price li[up] a').click(function () {
         var e = $('.dx-buy-price li[price] input[price]');
         var priceStr = e.val();

@@ -14,6 +14,44 @@ const contractArtifact = require(oddsdexAbifile); //produced by Truffle compile
 const OddsdexContract = contract(contractArtifact);
 OddsdexContract.setProvider(provider);
 
+const OnRechargeEvent = async function (error, msg) {
+    var raw = msg.raw;
+    var data = raw.data;
+    var topics = raw.topics;
+    var zz = web3.eth.abi.decodeLog(
+        [
+            {
+                type: 'address',
+                name: 'broker'
+            },
+            , {
+                type: 'uint256',
+                name: 'amount'
+            }, {
+                type: 'uint256',
+                name: 'balance'
+            }, {
+                type: 'uint256',
+                name: 'gas'
+            }
+        ],
+        data,
+        topics
+    );
+    console.log(zz);
+    var map = {
+        broker: zz['broker'],
+        amount: zz['amount'],
+        balance: zz['balance'],
+        gas: zz['gas']
+    }
+    // res.end(JSON.stringify(map));
+    var json = JSON.stringify(map);
+    for (var key in sockets) {
+        var socket = sockets[key];
+        socket.emit('OnRechargeEvent', json);
+    }
+}
 const OnSplitBillEvent = async function (error, msg) {
     var raw = msg.raw;
     var data = raw.data;
@@ -62,6 +100,7 @@ const OnSplitBillEvent = async function (error, msg) {
         data,
         topics
     );
+    console.log(zz);
     var map = {
         id: zz['id'],
         refId: zz['refId'],
@@ -110,6 +149,7 @@ const OnRefundBillEvent = async function (error, msg) {
         data,
         topics
     );
+    console.log(zz);
     var map = {
         id: zz['id'],
         refId: zz['refId'],
@@ -181,6 +221,7 @@ const OnMatchMakingEvent = async function (error, msg) {
         data,
         topics
     );
+    console.log(zz);
     var map = {
         id: zz['id'],
         refFId: zz['refFId'],
@@ -258,7 +299,7 @@ const OnStakeBillEvent = async function (error, msg) {
         data,
         topics
     );
-    // console.log(zz);
+    console.log(zz);
     var map = {
         id: web3.utils.hexToNumberString(zz['id']),
         owner: zz['owner'],
@@ -278,18 +319,22 @@ const OnStakeBillEvent = async function (error, msg) {
     }
     // const instance = await OddsdexContract.at(msg.address);
     // stateController(web3, instance);
-    console.log(map);
 };
+var _event_inited = {
 
+};
 module.exports.listerners = async function (req, res) {
     var uri = url.parse(req.url, true);
     var address = uri.query['address'];
     const instance = await OddsdexContract.at(address);
-
-    instance.OnStakeBillEvent(OnStakeBillEvent);
-    instance.OnMatchMakingEvent(OnMatchMakingEvent);
-    instance.OnRefundBillEvent(OnRefundBillEvent);
-    instance.OnSplitBillEvent(OnSplitBillEvent);
+    if (typeof _event_inited.address == 'undefined' || _event_inited.address == false || _event_inited.address == null) {
+        instance.OnRechargeEvent(OnRechargeEvent);
+        instance.OnStakeBillEvent(OnStakeBillEvent);
+        instance.OnMatchMakingEvent(OnMatchMakingEvent);
+        instance.OnRefundBillEvent(OnRefundBillEvent);
+        instance.OnSplitBillEvent(OnSplitBillEvent);
+        _event_inited.address = true;
+    }
 }
 module.exports.matchmake = async function (req, res) {
     var uri = url.parse(req.url, true);
@@ -297,7 +342,22 @@ module.exports.matchmake = async function (req, res) {
     const instance = await OddsdexContract.at(address);
 
     var broker = await instance.getBroker();
-    await instance.matchmake({ from: broker });
+    var result = await instance.matchmake({ from: broker });
+    var logs = result.logs;
+    var map = {
+        matchmakeTimes: 0,
+        winningDirection: 0
+    };
+    for (var i = 0; i < logs.length; i++) {
+        var e = logs[i];
+        var args = e.args;
+        if (e['event'] == 'OnMatchmakeReturn') {
+            map.matchmakeTimes = parseInt(args['matchmakeTimes']);
+            map.winningDirection = parseInt(args['winningDirection']);
+            break;
+        }
+    }
+    res.end(JSON.stringify(map));
 }
 module.exports.details = async function (req, res) {
     var uri = url.parse(req.url, true);
@@ -307,6 +367,7 @@ module.exports.details = async function (req, res) {
     var root = await instance.getRoot();
     var broker = await instance.getBroker();
     var isRunning = await instance.isRunning();
+    var balance = await instance.getBalance();
     var bulletinBoard = await instance.getBulletinBoard();
     var queueCount = await instance.getQueueCount();
     var frontQueueCount = await instance.getFrontQueueCount();
@@ -314,7 +375,7 @@ module.exports.details = async function (req, res) {
     var exchangeRate = web3.utils.fromWei((parseInt(bulletinBoard.oddunit) * parseInt(bulletinBoard.price)) + '', 'ether');
     var map = {
         root: root,
-        broker:broker,
+        broker: broker,
         isRunning: isRunning,
         exchangeRate: exchangeRate,
         bulletinBoard: {
@@ -328,7 +389,8 @@ module.exports.details = async function (req, res) {
         },
         queueCount: parseInt(queueCount),
         frontQueueCount: parseInt(frontQueueCount),
-        backQueueCount: parseInt(backQueueCount)
+        backQueueCount: parseInt(backQueueCount),
+        balance: web3.utils.fromWei(balance, 'ether')
     };
     res.end(JSON.stringify(map));
 }
