@@ -395,23 +395,38 @@ contract OddsdexContract is IOddsdexContract {
         lvar.prize = lvar.dealOdds.mul(lvar.dealPrice).mul(
             bulletinBoard.oddunit
         );
-        lvar.tailFRefundCost = tailF
-            .odds
-            .mul(tailF.buyPrice)
-            .mul(bulletinBoard.oddunit)
-            .sub(lvar.tailFCostOnBill);
-        lvar.tailBRefundCost = tailB
-            .odds
-            .mul(tailB.buyPrice)
-            .mul(bulletinBoard.oddunit)
-            .sub(lvar.tailBCostOnBill);
+
+        if (winningDirection == CoinDirection.front) {
+            lvar.tailFRefundCost = tailF
+                .odds
+                .mul(tailF.buyPrice)
+                .mul(bulletinBoard.oddunit)
+                .sub(lvar.tailFCostOnBill);
+            lvar.tailBRefundCost = tailB
+                .odds
+                .mul(tailB.buyPrice)
+                .mul(bulletinBoard.oddunit)
+                .sub(lvar.tailBCostOnBill)
+                .sub(lvar.prize);
+        } else if (winningDirection == CoinDirection.back) {
+            lvar.tailBRefundCost = tailB
+                .odds
+                .mul(tailB.buyPrice)
+                .mul(bulletinBoard.oddunit)
+                .sub(lvar.tailBCostOnBill);
+            lvar.tailFRefundCost = tailF
+                .odds
+                .mul(tailF.buyPrice)
+                .mul(bulletinBoard.oddunit)
+                .sub(lvar.tailFCostOnBill)
+                .sub(lvar.prize);
+        }
 
         //Verify Balance
-        uint256 minimumBalance = lvar
-            .prize
-            .add(lvar.tailFRefundCost)
-            .add(lvar.tailBRefundCost);
-            // .add(0.1*(10**18));//Estimating gas fee, Set to 1 because dynamic estimation is also inaccurate
+        uint256 minimumBalance = lvar.prize.add(lvar.tailFRefundCost).add(
+            lvar.tailBRefundCost
+        );
+        // .add(0.1*(10**18));//Estimating gas fee, Set to 1 because dynamic estimation is also inaccurate
         require(
             address(this).balance >= minimumBalance,
             string.concat(

@@ -64,7 +64,9 @@ $(document).ready(async function () {
             // $('.dx-events').html('事件接收区已准备好<br>');
         });
     })();
-
+    $('.dx-events').dblclick(function(){
+        $(this).empty();
+    })
     const refreshDealPanel = async function () {
         var params = new URLSearchParams(window.location.search)
         var contractAddress = params.get('address');
