@@ -19,3 +19,6 @@
 > analogized by copying the loss ratio to copying the stock price, and the number of bets is analogized to the number of shares. Each bet is set to 1 
 > CNY, and in the case of Ethereum, it is set to 0.001 ETH
 > 
+# Test 
+
+> ![oddsdex test ]([http://ss](https://github.com/carocean/game-oddsdex/tree/main/doc/test.png))
