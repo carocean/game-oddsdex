@@ -1,7 +1,10 @@
 $(document).ready(async function () {
     const web3 = new Web3(window.ethereum);
 
-    sessionStorage.setItem("dx-bill", $('.dx-box .dx-queue .dx-bill').first().prop('outerHTML'));
+    var dxBill = $('.dx-box .dx-queue .dx-bill');
+    if (dxBill.length > 0) {
+        sessionStorage.setItem("dx-bill", dxBill.first().prop('outerHTML'));
+    }
 
     (function () {
         var params = new URLSearchParams(window.location.search)
@@ -64,7 +67,7 @@ $(document).ready(async function () {
             // $('.dx-events').html('事件接收区已准备好<br>');
         });
     })();
-    $('.dx-events').dblclick(function(){
+    $('.dx-events').dblclick(function () {
         $(this).empty();
     })
     const refreshDealPanel = async function () {

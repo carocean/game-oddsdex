@@ -350,7 +350,8 @@ contract OddsdexContract is IOddsdexContract {
     }
 
     function _matchmakePairBill(CoinDirection winningDirection) private {
-        //撮合一次对单之后，吃不掉的再次放入队列中，因此等下轮撮合，所以只考虑撮合当前对单即可
+        //After matching an order, the uneatable ones will be placed in the queue again, 
+        //so wait for the next round of matching, so only consider matching the current order
         (uint32 bitIndexAtF, StakeBill memory tailF) = _topFirstOfStakeBill(
             CoinDirection.front
         );
@@ -363,12 +364,12 @@ contract OddsdexContract is IOddsdexContract {
         if (bitIndexAtB == 0xFFFFFFFF) {
             return;
         }
-        //将两单移除，如果有剩余再放到队列
+        //Remove the two bills, and put them in the queue if there are any remaining
         _removeStakeBill(bitIndexAtF);
         _removeStakeBill(bitIndexAtB);
 
         LocalVar memory lvar;
-        //撮合成交
+        //Make a deal
         lvar.dealOdds = _min(tailF.odds, tailB.odds);
         lvar.dealPrice = (tailF.buyPrice.add(tailB.buyPrice)).div(2);
         lvar.tailFOdds = tailF.odds.sub(lvar.dealOdds);
@@ -380,22 +381,12 @@ contract OddsdexContract is IOddsdexContract {
             bulletinBoard.oddunit
         );
 
-        //如果有剩余则存回
-        if (lvar.tailFOdds > 0) {
-            tailF.costs = lvar.tailFCostOnBill;
-            tailF.odds = lvar.tailFOdds;
-            storeStakeBill(tailF);
-        }
-        if (lvar.tailBOdds > 0) {
-            tailB.costs = lvar.tailBCostOnBill;
-            tailB.odds = lvar.tailBOdds;
-            storeStakeBill(tailB);
-        }
-
+        //due prize
         lvar.prize = lvar.dealOdds.mul(lvar.dealPrice).mul(
             bulletinBoard.oddunit
         );
 
+        //Calculate the funds to be returned
         if (winningDirection == CoinDirection.front) {
             lvar.tailFRefundCost = tailF
                 .odds
@@ -422,11 +413,23 @@ contract OddsdexContract is IOddsdexContract {
                 .sub(lvar.prize);
         }
 
+        //restore if there is any remaining
+        if (lvar.tailFOdds > 0) {
+            tailF.costs = lvar.tailFCostOnBill;
+            tailF.odds = lvar.tailFOdds;
+            storeStakeBill(tailF);
+        }
+        if (lvar.tailBOdds > 0) {
+            tailB.costs = lvar.tailBCostOnBill;
+            tailB.odds = lvar.tailBOdds;
+            storeStakeBill(tailB);
+        }
+
         //Verify Balance
         uint256 minimumBalance = lvar.prize.add(lvar.tailFRefundCost).add(
             lvar.tailBRefundCost
         );
-        // .add(0.1*(10**18));//Estimating gas fee, Set to 1 because dynamic estimation is also inaccurate
+        
         require(
             address(this).balance >= minimumBalance,
             string.concat(
