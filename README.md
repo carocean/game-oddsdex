@@ -21,4 +21,4 @@
 > 
 # Test 
 
-> ![oddsdex test ](https://github.com/carocean/game-oddsdex/tree/main/doc/test.png)
+> ![oddsdex test ](https://github.com/carocean/game-oddsdex/blob/main/doc/test.png)
