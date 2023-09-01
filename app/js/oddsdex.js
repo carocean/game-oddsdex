@@ -67,8 +67,10 @@ $(document).ready(async function () {
             // $('.dx-events').html('事件接收区已准备好<br>');
         });
     })();
-    $('.dx-events').dblclick(function () {
-        $(this).empty();
+    $('.dx-box .dx-toolbar span[clear-event]').click(function () {
+        if(confirm('是否要清除事件？')){
+            $('.dx-box .dx-events').empty();
+        }
     })
     const refreshDealPanel = async function () {
         var params = new URLSearchParams(window.location.search)
@@ -152,6 +154,7 @@ $(document).ready(async function () {
         var the = $(this);
         var p = the.parents('.dx-dts[matchmake]').find('p');
         p.empty();
+        p.html('撮合中...')
         $.get('/api/oddsdex.matchmake', { address: contractAddress }, function (data) {
             console.log(data);
             var obj = JSON.parse(data);

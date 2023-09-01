@@ -4,7 +4,7 @@ var path = require('path');
 const contract = require("@truffle/contract");
 const { time } = require('console');
 
-const provider = new Web3.providers.WebsocketProvider('ws://192.168.0.254:8545');
+const provider = new Web3.providers.WebsocketProvider('ws://192.168.1.254:8545');
 const web3 = new Web3(provider);
 
 

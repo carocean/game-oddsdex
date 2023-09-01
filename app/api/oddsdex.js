@@ -5,7 +5,7 @@ var path = require('path');
 const contract = require("@truffle/contract");
 const { time } = require('console');
 
-const provider = new Web3.providers.WebsocketProvider('ws://192.168.0.254:8545');
+const provider = new Web3.providers.WebsocketProvider('ws://192.168.1.254:8545');
 const web3 = new Web3(provider);
 
 
@@ -21,9 +21,13 @@ const OnRechargeEvent = async function (error, msg) {
     var zz = web3.eth.abi.decodeLog(
         [
             {
+                type: 'bytes16',
+                name: 'id'
+            },
+            {
                 type: 'address',
                 name: 'broker'
-            },
+            }
             , {
                 type: 'uint256',
                 name: 'amount'
@@ -40,6 +44,7 @@ const OnRechargeEvent = async function (error, msg) {
     );
     console.log(zz);
     var map = {
+        id: zz['id'],
         broker: zz['broker'],
         amount: zz['amount'],
         balance: zz['balance'],
@@ -59,16 +64,14 @@ const OnSplitBillEvent = async function (error, msg) {
     var zz = web3.eth.abi.decodeLog(
         [
             {
-                type: 'bytes32',
+                type: 'bytes16',
                 name: 'id'
             },
-            , {
-                type: 'bytes32',
-                name: 'refId'
-            }, {
-                type: 'bytes32',
-                name: 'mtn'
-            }, {
+            {
+                type: 'bytes16',
+                name: 'mmid'
+            },
+            {
                 type: 'address',
                 name: 'owner'
             }, {
@@ -103,8 +106,7 @@ const OnSplitBillEvent = async function (error, msg) {
     console.log(zz);
     var map = {
         id: zz['id'],
-        refId: zz['refId'],
-        mtn: zz['mtn'],
+        mmid: zz['mmid'],
         owner: zz['owner'],
         kickbackRate: zz['kickbackRate'],
         brokerageRate: zz['brokerageRate'],
@@ -129,16 +131,14 @@ const OnRefundBillEvent = async function (error, msg) {
     var zz = web3.eth.abi.decodeLog(
         [
             {
-                type: 'bytes32',
+                type: 'bytes16',
                 name: 'id'
             },
-            , {
-                type: 'bytes32',
-                name: 'refId'
-            }, {
-                type: 'bytes32',
-                name: 'mtn'
-            }, {
+            {
+                type: 'bytes16',
+                name: 'mmid'
+            },
+            {
                 type: 'address',
                 name: 'owner'
             }, {
@@ -152,8 +152,7 @@ const OnRefundBillEvent = async function (error, msg) {
     console.log(zz);
     var map = {
         id: zz['id'],
-        refId: zz['refId'],
-        mtn: zz['mtn'],
+        mmid: zz['mmid'],
         owner: zz['owner'],
         costs: zz['costs'],
     }
@@ -171,19 +170,16 @@ const OnMatchMakingEvent = async function (error, msg) {
     var zz = web3.eth.abi.decodeLog(
         [
             {
-                type: 'bytes32',
+                type: 'bytes16',
                 name: 'id'
+            }, {
+                type: 'bytes16',
+                name: 'fid'
+            }, {
+                type: 'bytes16',
+                name: 'bid'
             },
-            , {
-                type: 'bytes32',
-                name: 'refFId'
-            }, {
-                type: 'bytes32',
-                name: 'refBId'
-            }, {
-                type: 'bytes32',
-                name: 'mtn'
-            }, {
+            {
                 type: 'address',
                 name: 'broker'
             }, {
@@ -224,9 +220,8 @@ const OnMatchMakingEvent = async function (error, msg) {
     console.log(zz);
     var map = {
         id: zz['id'],
-        refFId: zz['refFId'],
-        refBId: zz['refBId'],
-        mtn: zz['mtn'],
+        fid: zz['fid'],
+        bid: zz['bid'],
         broker: zz['broker'],
         dealOdds: zz['dealOdds'],
         dealPrice: zz['dealPrice'],
@@ -267,10 +262,10 @@ const OnStakeBillEvent = async function (error, msg) {
     var zz = web3.eth.abi.decodeLog(
         [
             {
-                type: 'bytes32',
+                type: 'bytes16',
                 name: 'id'
             },
-            , {
+            {
                 type: 'address',
                 name: 'owner'
             }, {
@@ -301,7 +296,7 @@ const OnStakeBillEvent = async function (error, msg) {
     );
     console.log(zz);
     var map = {
-        id: web3.utils.hexToNumberString(zz['id']),
+        id: zz['id'],
         owner: zz['owner'],
         odds: parseInt(zz['odds']),
         costs: parseInt(zz['costs']),
@@ -342,7 +337,7 @@ module.exports.matchmake = async function (req, res) {
     const instance = await OddsdexContract.at(address);
 
     var broker = await instance.getBroker();
-    var result = await instance.matchmake({ from: broker });
+    var result = await instance.matchmake({ from: broker, gasLimit: 5000000 });
     var logs = result.logs;
     var map = {
         matchmakeTimes: 0,

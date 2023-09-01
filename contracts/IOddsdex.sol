@@ -46,9 +46,9 @@ interface IOddsdexContract {
 
     function recharge() external payable;
 
-    function canMatchmaking(
-        CoinDirection winningDirection
-    ) external returns (bool matched);
+    function canMatchmaking()
+        external
+        returns (bool matched, MatchmakingResult memory result);
 
     function matchmake() external;
 
@@ -84,7 +84,12 @@ struct BulletinBoard {
     uint16 brokerageRate;
     uint16 taxRate;
 }
-
+struct MatchmakingResult {
+    uint32 bitIndexAtF;
+    StakeBill tailF;
+    uint32 bitIndexAtB;
+    StakeBill tailB;
+}
 struct LuckyNumber {
     uint8 r1;
     uint8 r2;
@@ -95,14 +100,17 @@ struct LuckyNumber {
     uint8 b;
     uint256 sign;
 }
+//rc-
 struct RechargeBill {
+    bytes16 id;
     address broker;
     uint256 amount;
     uint256 balance;
     uint256 gas;
 }
+//sk-
 struct StakeBill {
-    bytes32 id;
+    bytes16 id;
     address owner;
     uint256 odds;
     uint256 costs;
@@ -112,34 +120,34 @@ struct StakeBill {
     uint256 gas;
     uint32 luckyNumber;
 }
+//mm-
 struct MatchmakingBill {
-    bytes32 id;
-    bytes32 refFId;
-    bytes32 refBId;
-    bytes32 mtn; //Matchmaking transaction number
+    bytes16 id;
+    bytes16 fid;
+    bytes16 bid;
     address broker;
     uint256 dealOdds;
     uint256 dealPrice;
-    uint256 tailFOdds;
-    uint256 tailBOdds;
-    uint256 tailFCostOnBill;
-    uint256 tailBCostOnBill;
-    uint256 tailFRefundCosts;
-    uint256 tailBRefundCosts;
+    uint256 fOdds;
+    uint256 bOdds;
+    uint256 fCostOnBill;
+    uint256 bCostOnBill;
+    uint256 fRefundCosts;
+    uint256 bRefundCosts;
     uint256 prize;
     CoinDirection winningDirection;
 }
+//rf-
 struct RefundBill {
-    bytes32 id;
-    bytes32 refId;
-    bytes32 mtn; //Matchmaking transaction number
+    bytes16 id;
+    bytes16 mmid;
     address owner;
     uint256 costs;
 }
+//st-
 struct SplitBill {
-    bytes32 id;
-    bytes32 refId;
-    bytes32 mtn; //Matchmaking transaction number
+    bytes16 id;
+    bytes16 mmid;
     address owner;
     uint16 kickbackRate;
     uint16 brokerageRate;
